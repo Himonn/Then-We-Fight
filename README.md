@@ -1,2 +1,2 @@
-# Imbued Fart
-This plugin farts
+# Then We Fight
+This plugin does not fart
