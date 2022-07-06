@@ -22,9 +22,6 @@ import net.runelite.client.util.Text;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +32,6 @@ import java.util.stream.Collectors;
 
 @PluginDescriptor(
 		name = "Then We Fight",
-		enabledByDefault = false,
 		description = "Then We Fight Gamemode Plugin"
 )
 @Slf4j
@@ -80,12 +76,12 @@ public class ThenWeFightPlugin extends Plugin
 	public static Collection<GroundObject> groundObjects = new ArrayList<>();
 	public static Collection<NPC> npcs = new ArrayList<>();
 
-	private static final File u1CustomDir = new File(RuneLite.RUNELITE_DIR, "1.png");
-	private static final File u2CustomDir = new File(RuneLite.RUNELITE_DIR, "2.png");
-	private static final File u3CustomDir = new File(RuneLite.RUNELITE_DIR, "3.png");
-	private static final File u4CustomDir = new File(RuneLite.RUNELITE_DIR, "4.png");
-	private static final File u5CustomDir = new File(RuneLite.RUNELITE_DIR, "5.png");
-	private static final File u6CustomDir = new File(RuneLite.RUNELITE_DIR, "6.png");
+	private static final File U_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/1.png");
+	private static final File U_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/2.png");
+	private static final File U_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/3.png");
+	private static final File U_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/4.png");
+	private static final File U_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/5.png");
+	private static final File U_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/6.png");
 
 	public static final Collection<Integer> OBJECT_ACTIONS = Arrays.asList(MenuAction.EXAMINE_OBJECT.getId(),
 			MenuAction.GAME_OBJECT_FIRST_OPTION.getId(), MenuAction.GAME_OBJECT_SECOND_OPTION.getId(),
@@ -100,7 +96,12 @@ public class ThenWeFightPlugin extends Plugin
 			MenuAction.GROUND_ITEM_THIRD_OPTION.getId(), MenuAction.GROUND_ITEM_FOURTH_OPTION.getId(),
 			MenuAction.GROUND_ITEM_FIFTH_OPTION.getId());
 
-	public static Collection<String> resources = Arrays.asList("background.png", "debug.png", "health.png", "prayer.png", "run.png", "spec.png");
+	public static String BACKGROUND_PATH = "background.png";
+	public static String DEBUG_PATH = "debug.png";
+	public static String HEALTH_PATH = "health.png";
+	public static String PRAYER_PATH = "prayer.png";
+	public static String RUN_PATH = "run.png";
+	public static String SPEC_PATH = "spec.png";
 
 	@Getter
 	private Image background;
@@ -148,36 +149,94 @@ public class ThenWeFightPlugin extends Plugin
 		updateTaskList();
 		loadResources();
 
-//		background = ImageUtil.loadImageResource(getClass(), "background.png");
-//		debugBackground = ImageUtil.loadImageResource(getClass(), "debug.png");
-//		runOrb = ImageUtil.loadImageResource(getClass(), "run.png");
-//		specOrb = ImageUtil.loadImageResource(getClass(), "spec.png");
-//		prayerOrb = ImageUtil.loadImageResource(getClass(), "prayer.png");
-//		healthOrb = ImageUtil.loadImageResource(getClass(), "health.png");
+		if (U_1_CUSTOM_DIR.exists())
+		{
+			try
+			{
+				synchronized (ImageIO.class)
+				{
+					u1Custom = ImageIO.read(U_1_CUSTOM_DIR);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("thenwefightplugin: error setting custom task 1 image", e);
+			}
+		}
 
-		if (u1CustomDir.exists())
+		if (U_2_CUSTOM_DIR.exists())
 		{
-			u1Custom = ImageIO.read(u1CustomDir);
+			try
+			{
+				synchronized (ImageIO.class)
+				{
+					u2Custom = ImageIO.read(U_2_CUSTOM_DIR);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("thenwefightplugin: error setting custom task 2 image", e);
+			}
 		}
-		if (u2CustomDir.exists())
+
+		if (U_3_CUSTOM_DIR.exists())
 		{
-			u2Custom = ImageIO.read(u2CustomDir);
+			try
+			{
+				synchronized (ImageIO.class)
+				{
+					u3Custom = ImageIO.read(U_3_CUSTOM_DIR);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("thenwefightplugin: error setting custom task 3 image", e);
+			}
 		}
-		if (u3CustomDir.exists())
+
+		if (U_4_CUSTOM_DIR.exists())
 		{
-			u3Custom = ImageIO.read(u3CustomDir);
+			try
+			{
+				synchronized (ImageIO.class)
+				{
+					u4Custom = ImageIO.read(U_4_CUSTOM_DIR);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("thenwefightplugin: error setting custom task 4 image", e);
+			}
 		}
-		if (u4CustomDir.exists())
+
+		if (U_5_CUSTOM_DIR.exists())
 		{
-			u4Custom = ImageIO.read(u4CustomDir);
+			try
+			{
+				synchronized (ImageIO.class)
+				{
+					u5Custom = ImageIO.read(U_5_CUSTOM_DIR);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("thenwefightplugin: error setting custom task 5 image", e);
+			}
 		}
-		if (u5CustomDir.exists())
+
+		if (U_6_CUSTOM_DIR.exists())
 		{
-			u5Custom = ImageIO.read(u5CustomDir);
-		}
-		if (u6CustomDir.exists())
-		{
-			u6Custom = ImageIO.read(u6CustomDir);
+			try
+			{
+				synchronized (ImageIO.class)
+				{
+					u6Custom = ImageIO.read(U_6_CUSTOM_DIR);
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("thenwefightplugin: error setting custom task 6 image", e);
+			}
 		}
 
 		unlockOverlayVisible = false;
@@ -950,45 +1009,17 @@ public class ThenWeFightPlugin extends Plugin
 		return objectComposition.getName().toLowerCase();
 	}
 
-	String backgroundPath = "background.png";
-
 	public void loadResources()
 	{
-		Class pluginClass = null;
 		try {
-			pluginClass = Class.forName("com.thenwefight.ThenWeFightPlugin");
-
-			for (String s : resources)
-			{
-				URL url = pluginClass.getClassLoader().getResource(s);
-				if (url != null)
-				{
-					switch (s){
-						case "background.png":
-							background = ImageIO.read(url);
-							break;
-						case "debug.png":
-							debugBackground = ImageIO.read(url);
-							break;
-						case "run.png":
-							runOrb = ImageIO.read(url);
-							break;
-						case "spec.png":
-							specOrb = ImageIO.read(url);
-							break;
-						case "prayer.png":
-							prayerOrb = ImageIO.read(url);
-							break;
-						case "health.png":
-							healthOrb = ImageIO.read(url);
-							break;
-					}
-
-				}
-			}
-
-		} catch (ClassNotFoundException | IOException e) {
-			e.printStackTrace();
+			background = ImageUtil.loadImageResource(getClass(), BACKGROUND_PATH);
+			debugBackground = ImageUtil.loadImageResource(getClass(), DEBUG_PATH);
+			runOrb = ImageUtil.loadImageResource(getClass(), RUN_PATH);
+			specOrb = ImageUtil.loadImageResource(getClass(), SPEC_PATH);
+			healthOrb = ImageUtil.loadImageResource(getClass(), HEALTH_PATH);
+			prayerOrb = ImageUtil.loadImageResource(getClass(), PRAYER_PATH);
+		} catch (Exception e){
+			log.error("thenwefightplugin, error loading image resources", e);
 		}
 	}
 
