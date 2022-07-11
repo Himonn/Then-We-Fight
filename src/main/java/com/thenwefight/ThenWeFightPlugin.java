@@ -324,7 +324,7 @@ public class ThenWeFightPlugin extends Plugin
 		int param0 = event.getActionParam0();
 		Widget widget = event.getMenuEntry().getWidget();
 
-		if (param1 == 10747957)
+		if (param1 == 10747957 || param1 == 10551356 || param1 == 35913792)
 		{
 			client.createMenuEntry(-1)
 					.setOption(ColorUtil.prependColorTag(unlockOverlayVisible ? "Hide Unlocks" : "View Unlocks", Color.ORANGE))
