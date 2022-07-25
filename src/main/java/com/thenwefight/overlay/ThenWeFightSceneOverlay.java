@@ -1,6 +1,8 @@
-package com.thenwefight;
+package com.thenwefight.overlay;
 
 import com.google.common.base.Strings;
+import com.thenwefight.ThenWeFightConfig;
+import com.thenwefight.ThenWeFightPlugin;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Point;
 import net.runelite.api.*;
@@ -19,6 +21,7 @@ import java.awt.*;
 
 @Slf4j
 @Singleton
+public
 class ThenWeFightSceneOverlay extends Overlay {
 
     @Inject
@@ -50,22 +53,22 @@ class ThenWeFightSceneOverlay extends Overlay {
 
         for (NPC n : ThenWeFightPlugin.npcs)
         {
-            renderNpcOverlay(graphics, config.overlayColour(), n);
+            renderNpcOverlay(graphics, config.gameOverlayColour(), n);
         }
 
         for (GameObject g : ThenWeFightPlugin.gameObjects)
         {
-            renderGameObject(graphics, config.overlayColour(), g);
+            renderGameObject(graphics, config.gameOverlayColour(), g);
         }
 
         for (GroundObject go : ThenWeFightPlugin.groundObjects)
         {
-            renderGroundObject(graphics, config.overlayColour(), go);
+            renderGroundObject(graphics, config.gameOverlayColour(), go);
         }
 
         for (WallObject wo : ThenWeFightPlugin.wallObjects)
         {
-            renderWallObject(graphics, config.overlayColour(), wo);
+            renderWallObject(graphics, config.gameOverlayColour(), wo);
         }
 
         return null;

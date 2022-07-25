@@ -1,8 +1,11 @@
-package com.thenwefight;
+package com.thenwefight.overlay;
 
+import com.thenwefight.ThenWeFightConfig;
+import com.thenwefight.ThenWeFightPlugin;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Player;
+import net.runelite.api.Prayer;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.ui.overlay.Overlay;
@@ -10,14 +13,19 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.util.ColorUtil;
+import net.runelite.client.util.Text;
+import com.thenwefight.*;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
+import static com.thenwefight.ThenWeFightPlugin.*;
+
 @Slf4j
 @Singleton
+public
 class ThenWeFightWidgetOverlay extends Overlay {
 
     @Inject
@@ -55,7 +63,7 @@ class ThenWeFightWidgetOverlay extends Overlay {
 
                 if (custom != null && !custom.isHidden())
                 {
-                    renderWidgetOverlay(graphics, custom, config.overlayColour());
+                    renderWidgetOverlay(graphics, custom, config.uiOverlayColour());
                 }
             }
         }
@@ -70,7 +78,7 @@ class ThenWeFightWidgetOverlay extends Overlay {
             }
         }
 
-        if (config.lockPrayers())
+        if (config.lockPrayer())
         {
             Widget prayOrb = client.getWidget(WidgetInfo.MINIMAP_PRAYER_ORB);
 
@@ -89,9 +97,40 @@ class ThenWeFightWidgetOverlay extends Overlay {
                 {
                     for (Widget prayer : prayers)
                     {
-                        if (!prayer.isHidden())
+                        String name = Text.standardize(prayer.getName());
+
+                        if (!prayer.isHidden() &&
+                            ((config.lockThickSkin() && name.equals(THICK_SKIN_NAME))
+                            || (config.lockBurstOfStrength() && name.equals(BURST_OF_STRENGTH_NAME))
+                            || (config.lockClarityOfThought() && name.equals(CLARITY_OF_THOUGHT_NAME))
+                            || (config.lockRockSkin() && name.equals(ROCK_SKIN_NAME))
+                            || (config.lockSuperhumanStrength() && name.equals(SUPERHUMAN_STRENGTH_NAME))
+                            || (config.lockImprovedReflexes() && name.equals(IMPROVED_REFLEXES_NAME))
+                            || (config.lockRapidRestore() && name.equals(RAPID_RESTORE_NAME))
+                            || (config.lockRapidHeal() && name.equals(RAPID_HEAL_NAME))
+                            || (config.lockProtectItem() && name.equals(PROTECT_ITEM_NAME))
+                            || (config.lockSteelSkin() && name.equals(STEEL_SKIN_NAME))
+                            || (config.lockUltimateStrength() && name.equals(ULTIMATE_STRENGTH_NAME))
+                            || (config.lockIncredibleReflexes() && name.equals(INCREDIBLE_REFLEXES_NAME))
+                            || (config.lockProtectFromMagic() && name.equals(PROTECT_FROM_MAGIC_NAME))
+                            || (config.lockProtectFromMissiles() && name.equals(PROTECT_FROM_MISSILES_NAME))
+                            || (config.lockProtectFromMelee() && name.equals(PROTECT_FROM_MELEE_NAME))
+                            || (config.lockRetribution() && name.equals(RETRIBUTION_NAME))
+                            || (config.lockRedemption() && name.equals(REDEMPTION_NAME))
+                            || (config.lockSmite() && name.equals(SMITE_NAME))
+                            || (config.lockSharpEye() && name.equals(SHARP_EYE_NAME))
+                            || (config.lockMysticWill() && name.equals(MYSTIC_WILL_NAME))
+                            || (config.lockHawkEye() && name.equals(HAWK_EYE_NAME))
+                            || (config.lockMysticLore() && name.equals(MYSTIC_LORE_NAME))
+                            || (config.lockEagleEye() && name.equals(EAGLE_EYE_NAME))
+                            || (config.lockMysticMight() && name.equals(MYSTIC_MIGHT_NAME))
+                            || (config.lockChivalry() && name.equals(CHIVALRY_NAME))
+                            || (config.lockPiety() && name.equals(PIETY_NAME))
+                            || (config.lockRigour() && name.equals(RIGOUR_NAME))
+                            || (config.lockAugury() && name.equals(AUGURY_NAME))
+                            || (config.lockPreserve() && name.equals(PRESERVE_NAME))))
                         {
-                            renderWidgetOverlay(graphics, prayer, config.overlayColour());
+                            renderWidgetOverlay(graphics, prayer, config.uiOverlayColour());
                         }
                     }
                 }
@@ -111,11 +150,11 @@ class ThenWeFightWidgetOverlay extends Overlay {
 
             if (specBar != null && !specBar.isHidden())
             {
-                renderWidgetOverlay(graphics, specBar, config.overlayColour());
+                renderWidgetOverlay(graphics, specBar, config.uiOverlayColour());
             }
         }
 
-        if (config.lockHpOrb())
+        if (config.lockHitpoints())
         {
             Widget hpOrb = client.getWidget(WidgetInfo.MINIMAP_HEALTH_ORB);
 
@@ -139,7 +178,7 @@ class ThenWeFightWidgetOverlay extends Overlay {
                     {
                         if (!spell.isHidden() && spell.getName().toLowerCase().contains("tele"))
                         {
-                            renderWidgetOverlay(graphics, spell, config.overlayColour());
+                            renderWidgetOverlay(graphics, spell, config.uiOverlayColour());
                         }
                     }
                 }
@@ -185,7 +224,7 @@ class ThenWeFightWidgetOverlay extends Overlay {
                         || (config.lockWoodcutting() && skill.getId() == 20971542)
                         || (config.lockFarming() && skill.getId() == 20971543))
                     {
-                        renderWidgetOverlay(graphics, skill, config.overlayColour());
+                        renderWidgetOverlay(graphics, skill, config.uiOverlayColour());
                     }
                 }
             }
@@ -197,7 +236,7 @@ class ThenWeFightWidgetOverlay extends Overlay {
 
             if (emoteTab != null && !emoteTab.isHidden())
             {
-                renderWidgetOverlay(graphics, emoteTab, config.overlayColour());
+                renderWidgetOverlay(graphics, emoteTab, config.uiOverlayColour());
             }
         }
 
@@ -207,14 +246,14 @@ class ThenWeFightWidgetOverlay extends Overlay {
 
             if (worldList != null && !worldList.isHidden())
             {
-                renderWidgetOverlay(graphics, worldList, config.overlayColour());
+                renderWidgetOverlay(graphics, worldList, config.uiOverlayColour());
             }
 
             Widget switchWorlds = client.getWidget(11927559);
 
             if (switchWorlds != null && !switchWorlds.isHidden())
             {
-                renderWidgetOverlay(graphics, switchWorlds, config.overlayColour());
+                renderWidgetOverlay(graphics, switchWorlds, config.uiOverlayColour());
             }
         }
 

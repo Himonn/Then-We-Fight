@@ -1,6 +1,8 @@
-package com.thenwefight;
+package com.thenwefight.overlay;
 
 import com.google.common.base.Strings;
+import com.thenwefight.ThenWeFightConfig;
+import com.thenwefight.ThenWeFightPlugin;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.client.game.ItemManager;
@@ -16,6 +18,7 @@ import java.awt.*;
 
 @Slf4j
 @Singleton
+public
 class ThenWeFightTaskOverlay extends Overlay {
     @Inject
     private ItemManager itemManager;
@@ -70,9 +73,9 @@ class ThenWeFightTaskOverlay extends Overlay {
         renderTextLocation(graphics, title, TITLE, Color.YELLOW);
         renderTextLocation(graphics, points, config.points(), Color.YELLOW);
 
-        for (int i = config.taskOffset(); i <= ThenWeFightPlugin.rawTaskList.length; i++)
+        for (int i = config.taskScroll(); i <= ThenWeFightPlugin.rawTaskList.length; i++)
         {
-            if (i >= config.taskOffset() + 24)
+            if (i >= config.taskScroll() + 12)
             {
                 break;
             }
@@ -97,7 +100,7 @@ class ThenWeFightTaskOverlay extends Overlay {
             String text = (taskCompleted ? "[x] " : "[  ] ") + taskPoints + " - " + taskName;
             int textLength = text.length();
 
-            while (graphics.getFontMetrics().stringWidth(text) >= 225)
+            while (graphics.getFontMetrics().stringWidth(text) >= 465)
             {
                 text = text.substring(0,text.length()-1);
             }
@@ -107,9 +110,7 @@ class ThenWeFightTaskOverlay extends Overlay {
                 text = text.substring(0, text.length()-3) + "...";
             }
 
-            Point point = (i - config.taskOffset() > 11) ?
-                    new Point(250 + overlay.x, 40 + (20 * (i - config.taskOffset() - 11) + overlay.y))
-                    : new Point(15 + overlay.x, 40 +(20 * (i - config.taskOffset() + 1)) + overlay.y);
+            Point point = new Point(20 + overlay.x, 40 +(20 * (i - config.taskScroll() + 1)) + overlay.y);
 
             renderTextLocation(graphics, point, text, colour);
         }

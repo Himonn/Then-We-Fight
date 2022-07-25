@@ -1,5 +1,7 @@
-package com.thenwefight;
+package com.thenwefight.overlay;
 
+import com.thenwefight.ThenWeFightConfig;
+import com.thenwefight.ThenWeFightPlugin;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetItem;
@@ -42,10 +44,10 @@ public class ThenWeFightItemOverlay extends WidgetItemOverlay {
         {
             Rectangle bounds = widgetItem.getCanvasBounds();
 
-            final BufferedImage outline = itemManager.getItemOutline(itemId, widgetItem.getQuantity(), config.overlayColour());
+            final BufferedImage outline = itemManager.getItemOutline(itemId, widgetItem.getQuantity(), config.uiOverlayColour());
             graphics.drawImage(outline, (int) bounds.getX(), (int) bounds.getY(), null);
 
-            final Image image = ImageUtil.fillImage(itemManager.getImage(itemId, widgetItem.getQuantity(), false), config.overlayColour());
+            final Image image = ImageUtil.fillImage(itemManager.getImage(itemId, widgetItem.getQuantity(), false), config.uiOverlayColour());
             float opacity = (config.opacity() == 0 ? 0 : config.opacity() / 255f);
             graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
             graphics.drawImage(image, (int) bounds.getX(), (int) bounds.getY(), null);

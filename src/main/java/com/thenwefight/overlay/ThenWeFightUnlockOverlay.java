@@ -1,6 +1,8 @@
-package com.thenwefight;
+package com.thenwefight.overlay;
 
 import com.google.common.base.Strings;
+import com.thenwefight.ThenWeFightConfig;
+import com.thenwefight.ThenWeFightPlugin;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.client.game.ItemManager;
@@ -16,6 +18,7 @@ import java.awt.*;
 
 @Slf4j
 @Singleton
+public
 class ThenWeFightUnlockOverlay extends Overlay {
     @Inject
     private ItemManager itemManager;

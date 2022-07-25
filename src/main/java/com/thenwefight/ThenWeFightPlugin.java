@@ -1,6 +1,9 @@
 package com.thenwefight;
 
 import com.google.inject.Provides;
+import com.thenwefight.overlay.*;
+import com.thenwefight.utils.GameUtils;
+import com.thenwefight.utils.PluginUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
@@ -12,23 +15,18 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ColorUtil;
-import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
-import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @PluginDescriptor(
 		name = "Then We Fight",
@@ -43,10 +41,14 @@ public class ThenWeFightPlugin extends Plugin
 	private ClientThread clientThread;
 	@Inject
 	private ThenWeFightConfig config;
+
 	@Inject
 	private OverlayManager overlayManager;
 	@Inject
 	private ConfigManager configManager;
+	@Inject
+	private ItemManager itemManager;
+
 	@Inject
 	private ThenWeFightUnlockOverlay unlockOverlay;
 	@Inject
@@ -58,6 +60,11 @@ public class ThenWeFightPlugin extends Plugin
 	@Inject
 	private ThenWeFightTaskOverlay taskOverlay;
 
+	@Inject
+	private PluginUtils pluginUtils;
+	@Inject
+	private GameUtils gameUtils;
+
 	public static String[] rawTaskList;
 
 	public static List<Integer> unlockedItems = new ArrayList<>();
@@ -65,23 +72,33 @@ public class ThenWeFightPlugin extends Plugin
 	public static List<Integer> lockedWidgets = new ArrayList<>();
 	public static List<String> lockedObjects = new ArrayList<>();
 
-	public static Collection<String> bankNpcs = Arrays.asList("banker", "grand exchange clerk", "banker tutor");
-	public static Collection<String> bankObjects = Arrays.asList("bank booth", "bank chest", "bank deposit box", "bank deposit chest", "grand exchange booth");
-	public static Collection<String> underGroundObjects = Arrays.asList("stairs", "staircase", "trapdoor", "ladder", "dark hole", "hole", "rope", "cavern entrance", "dive", "cave", "tunnel entrance");
-	public static Collection<String> stairObjects = Arrays.asList("stairs", "staircase");
-	public static Collection<String> doorObjects = Arrays.asList("door", "large door");
+	public static final Collection<String> BANK_NPC_NAMES = Arrays.asList("banker", "grand exchange clerk", "banker tutor");
+	public static final Collection<String> BANK_OBJECT_NAMES = Arrays.asList("bank booth", "bank chest", "bank deposit box", "bank deposit chest", "grand exchange booth");
+	public static final Collection<String> UNDERGROUND_OBJECT_NAMES = Arrays.asList("stairs", "staircase", "trapdoor", "ladder", "dark hole", "hole", "rope", "cavern entrance", "dive", "cave", "tunnel entrance");
+	public static final Collection<String> TELEPORT_OPTIONS = Arrays.asList("teleport", "tele");
+	public static final Collection<String> TELEPORT_TARGETS = Arrays.asList("teleport", "tele");
+	public static final Collection<String> STAIRS_OBJECT_NAMES = Arrays.asList("stairs", "staircase");
+	public static final Collection<String> DOOR_OBJECT_NAMES = Arrays.asList("door", "large door");
+	public static final Collection<String> DROP_OPTIONS = Arrays.asList("drop", "destroy");
+	public static final Collection<String> EAT_OPTIONS = Arrays.asList("eat", "consume");
+	public static final Collection<String> DRINK_OPTIONS = Arrays.asList("drink");
+	public static final Collection<String> THIEVE_OPTIONS = Arrays.asList("pickpocket", "steal");
+	public static final Collection<String> WOODCUTTING_OPTIONS = Arrays.asList("chop down");
+	public static final Collection<String> FISHING_OPTIONS = Arrays.asList("bait", "fish", "cast-net", "lure");
+	public static final Collection<String> FISHING_TARGETS = Arrays.asList("fishing spot", "rod fishing spot");
+	public static final Collection<String> SLAYER_NPC_TARGETS = Arrays.asList("turael", "spria", "krystilia", "mazchna", "vannaka", "chaeldar", "konar quo maten", "nieve", "steve", "duradel");
 
 	public static Collection<GameObject> gameObjects = new ArrayList<>();
 	public static Collection<WallObject> wallObjects = new ArrayList<>();
 	public static Collection<GroundObject> groundObjects = new ArrayList<>();
 	public static Collection<NPC> npcs = new ArrayList<>();
 
-	private static final File U_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/1.png");
-	private static final File U_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/2.png");
-	private static final File U_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/3.png");
-	private static final File U_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/4.png");
-	private static final File U_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/5.png");
-	private static final File U_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/6.png");
+	public static final File U_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/1.png");
+	public static final File U_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/2.png");
+	public static final File U_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/3.png");
+	public static final File U_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/4.png");
+	public static final File U_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/5.png");
+	public static final File U_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/6.png");
 
 	public static final Collection<Integer> OBJECT_ACTIONS = Arrays.asList(MenuAction.EXAMINE_OBJECT.getId(),
 			MenuAction.GAME_OBJECT_FIRST_OPTION.getId(), MenuAction.GAME_OBJECT_SECOND_OPTION.getId(),
@@ -96,37 +113,72 @@ public class ThenWeFightPlugin extends Plugin
 			MenuAction.GROUND_ITEM_THIRD_OPTION.getId(), MenuAction.GROUND_ITEM_FOURTH_OPTION.getId(),
 			MenuAction.GROUND_ITEM_FIFTH_OPTION.getId());
 
-	public static String BACKGROUND_PATH = "background.png";
-	public static String DEBUG_PATH = "debug.png";
-	public static String HEALTH_PATH = "health.png";
-	public static String PRAYER_PATH = "prayer.png";
-	public static String RUN_PATH = "run.png";
-	public static String SPEC_PATH = "spec.png";
+	public static final Collection<Integer> QUEST_TAB_PARAMS = Arrays.asList(10747957, 10551356, 35913792);
+	public static final Collection<Integer> INVENT_TAB_PARAMS = Arrays.asList(10747958, 10551357, 35913793);
+	public static final Collection<Integer> EQUIPMENT_TAB_PARAMS = Arrays.asList(10747959 ,10551358, 35913794);
+
+	public static final String BACKGROUND_PATH = "background.png";
+	public static final String DEBUG_PATH = "debug.png";
+	public static final String HEALTH_PATH = "health.png";
+	public static final String PRAYER_PATH = "prayer.png";
+	public static final String RUN_PATH = "run.png";
+	public static final String SPEC_PATH = "spec.png";
+
+
+	public static final String THICK_SKIN_NAME = "thick skin";
+	public static final String BURST_OF_STRENGTH_NAME = "burst of strength";
+	public static final String CLARITY_OF_THOUGHT_NAME = "clarity of thought";
+	public static final String SHARP_EYE_NAME = "sharp eye";
+	public static final String MYSTIC_WILL_NAME = "mystic will";
+	public static final String ROCK_SKIN_NAME = "rock skin";
+	public static final String SUPERHUMAN_STRENGTH_NAME = "superhuman strength";
+	public static final String IMPROVED_REFLEXES_NAME = "improved reflexes";
+	public static final String RAPID_RESTORE_NAME = "rapid restore";
+	public static final String RAPID_HEAL_NAME = "rapid heal";
+	public static final String PROTECT_ITEM_NAME = "protect item";
+	public static final String HAWK_EYE_NAME = "hawk eye";
+	public static final String MYSTIC_LORE_NAME = "mystic lore";
+	public static final String STEEL_SKIN_NAME = "steel skin";
+	public static final String ULTIMATE_STRENGTH_NAME = "ultimate strength";
+	public static final String INCREDIBLE_REFLEXES_NAME = "incredible reflexes";
+	public static final String PROTECT_FROM_MAGIC_NAME = "protect from magic";
+	public static final String PROTECT_FROM_MISSILES_NAME = "protect from missiles";
+	public static final String PROTECT_FROM_MELEE_NAME = "protect from melee";
+	public static final String EAGLE_EYE_NAME = "eagle eye";
+	public static final String MYSTIC_MIGHT_NAME = "mystic might";
+	public static final String RETRIBUTION_NAME = "retribution";
+	public static final String REDEMPTION_NAME = "redemption";
+	public static final String SMITE_NAME = "smite";
+	public static final String PRESERVE_NAME = "preserve";
+	public static final String CHIVALRY_NAME = "chivalry";
+	public static final String PIETY_NAME = "piety";
+	public static final String RIGOUR_NAME = "rigour";
+	public static final String AUGURY_NAME = "augury";
 
 	@Getter
-	private Image background;
+	public Image background;
 	@Getter
-	private Image debugBackground;
+	public Image debugBackground;
 	@Getter
-	private Image runOrb;
+	public Image runOrb;
 	@Getter
-	private Image prayerOrb;
+	public Image prayerOrb;
 	@Getter
-	private Image specOrb;
+	public Image specOrb;
 	@Getter
-	private Image healthOrb;
+	public Image healthOrb;
 	@Getter
-	private Image u1Custom;
+	public Image u1Custom;
 	@Getter
-	private Image u2Custom;
+	public Image u2Custom;
 	@Getter
-	private Image u3Custom;
+	public Image u3Custom;
 	@Getter
-	private Image u4Custom;
+	public Image u4Custom;
 	@Getter
-	private Image u5Custom;
+	public Image u5Custom;
 	@Getter
-	private Image u6Custom;
+	public Image u6Custom;
 
 	public boolean unlockOverlayVisible = false;
 	public boolean taskOverlayVisible = false;
@@ -142,102 +194,13 @@ public class ThenWeFightPlugin extends Plugin
 		overlayManager.add(widgetOverlay);
 		overlayManager.add(taskOverlay);
 
-		updateItemList();
-		updateNpcList();
-		updateWidgetList();
-		updateGameObjectList();
-		updateTaskList();
-		loadResources();
-
-		if (U_1_CUSTOM_DIR.exists())
-		{
-			try
-			{
-				synchronized (ImageIO.class)
-				{
-					u1Custom = ImageIO.read(U_1_CUSTOM_DIR);
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("thenwefightplugin: error setting custom task 1 image", e);
-			}
-		}
-
-		if (U_2_CUSTOM_DIR.exists())
-		{
-			try
-			{
-				synchronized (ImageIO.class)
-				{
-					u2Custom = ImageIO.read(U_2_CUSTOM_DIR);
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("thenwefightplugin: error setting custom task 2 image", e);
-			}
-		}
-
-		if (U_3_CUSTOM_DIR.exists())
-		{
-			try
-			{
-				synchronized (ImageIO.class)
-				{
-					u3Custom = ImageIO.read(U_3_CUSTOM_DIR);
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("thenwefightplugin: error setting custom task 3 image", e);
-			}
-		}
-
-		if (U_4_CUSTOM_DIR.exists())
-		{
-			try
-			{
-				synchronized (ImageIO.class)
-				{
-					u4Custom = ImageIO.read(U_4_CUSTOM_DIR);
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("thenwefightplugin: error setting custom task 4 image", e);
-			}
-		}
-
-		if (U_5_CUSTOM_DIR.exists())
-		{
-			try
-			{
-				synchronized (ImageIO.class)
-				{
-					u5Custom = ImageIO.read(U_5_CUSTOM_DIR);
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("thenwefightplugin: error setting custom task 5 image", e);
-			}
-		}
-
-		if (U_6_CUSTOM_DIR.exists())
-		{
-			try
-			{
-				synchronized (ImageIO.class)
-				{
-					u6Custom = ImageIO.read(U_6_CUSTOM_DIR);
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("thenwefightplugin: error setting custom task 6 image", e);
-			}
-		}
+		pluginUtils.updateItemList();
+		pluginUtils.updateNpcList();
+		pluginUtils.updateWidgetList();
+		pluginUtils.updateGameObjectList();
+		pluginUtils.updateTaskList();
+		pluginUtils.loadResources();
+		pluginUtils.loadCustomImages();
 
 		unlockOverlayVisible = false;
 		taskOverlayVisible = false;
@@ -254,10 +217,12 @@ public class ThenWeFightPlugin extends Plugin
 		overlayManager.remove(widgetOverlay);
 		overlayManager.remove(taskOverlay);
 
-		updateItemList();
-		updateNpcList();
-		updateWidgetList();
-		updateGameObjectList();
+		pluginUtils.updateItemList();
+		pluginUtils.updateNpcList();
+		pluginUtils.updateWidgetList();
+		pluginUtils.updateGameObjectList();
+		pluginUtils.loadResources();
+		pluginUtils.loadCustomImages();
 
 		unlockOverlayVisible = false;
 		taskOverlayVisible = false;
@@ -275,14 +240,14 @@ public class ThenWeFightPlugin extends Plugin
 
 		if (event.getKey().equals("unlockedItems"))
 		{
-			updateItemList();
+			pluginUtils.updateItemList();
 		}
 
 		if (event.getKey().equals("unlockedNpcs")
 				|| event.getKey().equals("unlockNpcs")
 				|| event.getKey().equals("lockBanks"))
 		{
-			updateNpcList();
+			pluginUtils.updateNpcList();
 		}
 
 		if (event.getKey().equals("lockedGameObjects")
@@ -292,17 +257,17 @@ public class ThenWeFightPlugin extends Plugin
 				|| event.getKey().equals("lockStairs")
 				|| event.getKey().equals("lockDoors"))
 		{
-			updateGameObjectList();
+			pluginUtils.updateGameObjectList();
 		}
 
 		if (event.getKey().equals("lockedWidgets"))
 		{
-			updateWidgetList();
+			pluginUtils.updateWidgetList();
 		}
 
 		if (event.getKey().equals("taskList"))
 		{
-			updateTaskList();
+			pluginUtils.updateTaskList();
 		}
 	}
 
@@ -318,63 +283,119 @@ public class ThenWeFightPlugin extends Plugin
 		String target = event.getTarget();
 		String cleanTarget = Text.standardize(target);
 		String option = event.getOption();
+		String cleanOption = Text.standardize(option);
 		int type = event.getType();
 		int identifier = event.getIdentifier();
 		int param1 = event.getActionParam1();
 		int param0 = event.getActionParam0();
 		Widget widget = event.getMenuEntry().getWidget();
+		boolean shiftPressed = client.isKeyPressed(KeyCode.KC_SHIFT);
+		boolean unlockedItem = false;
+		boolean lockedNpc = false;
 
-		if (param1 == 10747957 || param1 == 10551356 || param1 == 35913792)
+		if (widget != null)
+		{
+			unlockedItem = unlockedItems.contains(widget.getItemId());
+		}
+
+		if (QUEST_TAB_PARAMS.contains(param1))
 		{
 			client.createMenuEntry(-1)
 					.setOption(ColorUtil.prependColorTag(unlockOverlayVisible ? "Hide Unlocks" : "View Unlocks", Color.ORANGE))
-					.setParam1(10747957)
+					.setParam1(param1)
 					.setDeprioritized(true)
 					.setType(MenuAction.RUNELITE);
 
 
 			client.createMenuEntry(-2)
 					.setOption(ColorUtil.prependColorTag(taskOverlayVisible ? "Hide Tasks" : "View Tasks", Color.ORANGE))
-					.setParam1(10747957)
+					.setParam1(param1)
 					.setDeprioritized(true)
 					.setType(MenuAction.RUNELITE);
 		}
 
-        if (param1 == WidgetInfo.INVENTORY.getId()
-                && type == MenuAction.CC_OP_LOW_PRIORITY.getId()
-                && client.isKeyPressed(KeyCode.KC_SHIFT)
-				&& identifier == 10
-				&& event.getMenuEntry().getWidget() != null
-				&& config.unlockItems())
-        {
-			boolean unlocked = unlockedItems.contains(event.getMenuEntry().getWidget().getItemId());
-
-			if (widget != null)
+		if (INVENT_TAB_PARAMS.contains(param1))
+		{
+			if (config.unlockItems())
 			{
 				client.createMenuEntry(-1)
-						.setOption(ColorUtil.prependColorTag(unlocked ? "Lock": "Unlock", Color.ORANGE))
+						.setOption(ColorUtil.prependColorTag("Lock All Inventory Items", Color.ORANGE))
+						.setParam1(param1)
+						.setDeprioritized(true)
+						.setType(MenuAction.RUNELITE)
+						.onClick(pluginUtils::lockAllItems);
+
+
+				client.createMenuEntry(-2)
+						.setOption(ColorUtil.prependColorTag("Unlock All Inventory Items", Color.ORANGE))
+						.setParam1(param1)
+						.setDeprioritized(true)
+						.setType(MenuAction.RUNELITE)
+						.onClick(pluginUtils::unlockAllItems);
+
+				client.createMenuEntry(-3)
+						.setOption(ColorUtil.prependColorTag("Lock All Inventory Food", Color.ORANGE))
+						.setParam1(param1)
+						.setDeprioritized(true)
+						.setType(MenuAction.RUNELITE)
+						.onClick(pluginUtils::lockAllFood);
+
+				client.createMenuEntry(-4)
+						.setOption(ColorUtil.prependColorTag("Unlock All Inventory Food", Color.ORANGE))
+						.setParam1(param1)
+						.setDeprioritized(true)
+						.setType(MenuAction.RUNELITE)
+						.onClick(pluginUtils::unlockAllFood);
+			}
+		}
+
+		if (shiftPressed)
+		{
+			if (param1 == WidgetInfo.INVENTORY.getId()
+					&& type == MenuAction.CC_OP_LOW_PRIORITY.getId()
+					&& identifier == 10
+					&& widget != null
+					&& config.unlockItems())
+			{
+				client.createMenuEntry(-1)
+						.setOption(ColorUtil.prependColorTag(unlockedItem ? "Lock": "Unlock", Color.ORANGE))
 						.setTarget(target)
 						.setIdentifier(identifier)
 						.setParam0(widget.getItemId())
 						.setParam1(param1)
 						.setType(MenuAction.RUNELITE);
 			}
-        }
 
-		if (type == MenuAction.EXAMINE_NPC.getId()
-			&& client.isKeyPressed(KeyCode.KC_SHIFT)
-			&& config.unlockNpcs())
-		{
-			final int id = event.getMenuEntry().getIdentifier();
-			final NPC[] cachedNPCs = client.getCachedNPCs();
-			final NPC npc = cachedNPCs[id];
-
-			if (npc != null && npc.getName() != null)
+			if (type == MenuAction.EXAMINE_NPC.getId()
+					&& config.unlockNpcs())
 			{
-				boolean unlocked = unlockedNpcs.contains(npc.getName().toLowerCase());
+				final int id = event.getMenuEntry().getIdentifier();
+				final NPC[] cachedNPCs = client.getCachedNPCs();
+				final NPC npc = cachedNPCs[id];
+
+				if (npc != null && npc.getName() != null)
+				{
+					boolean unlocked = unlockedNpcs.contains(npc.getName().toLowerCase());
+
+					client.createMenuEntry(-1)
+							.setOption(ColorUtil.prependColorTag(unlocked ? "Lock NPC": "Unlock NPC", Color.ORANGE))
+							.setTarget(target)
+							.setIdentifier(identifier)
+							.setParam0(param0)
+							.setParam1(param1)
+							.setType(MenuAction.RUNELITE);
+				}
+			}
+
+			if (type == MenuAction.EXAMINE_OBJECT.getId()
+					&& config.lockGameObjects())
+			{
+				final int id = event.getMenuEntry().getIdentifier();
+
+				boolean unlocked = lockedObjects.contains(gameUtils.getGameObjectName(id));
 
 				client.createMenuEntry(-1)
-						.setOption(ColorUtil.prependColorTag(unlocked ? "Lock NPC": "Unlock NPC", Color.ORANGE))
+						.setOption(ColorUtil.prependColorTag(unlocked ? "Unlock Object": "Lock Object", Color.ORANGE))
 						.setTarget(target)
 						.setIdentifier(identifier)
 						.setParam0(param0)
@@ -383,42 +404,41 @@ public class ThenWeFightPlugin extends Plugin
 			}
 		}
 
-		if (type == MenuAction.EXAMINE_OBJECT.getId()
-				&& client.isKeyPressed(KeyCode.KC_SHIFT)
-				&& config.lockGameObjects())
+		if (config.unlockNpcs() && NPC_ACTIONS.contains(type))
 		{
-			final int id = event.getMenuEntry().getIdentifier();
+			final NPC[] cachedNPCs = client.getCachedNPCs();
+			final NPC npc = cachedNPCs[identifier];
 
-			boolean unlocked = lockedObjects.contains(getGameObjectName(id));
-
-			client.createMenuEntry(-1)
-					.setOption(ColorUtil.prependColorTag(unlocked ? "Unlock Object": "Lock Object", Color.ORANGE))
-					.setTarget(target)
-					.setIdentifier(identifier)
-					.setParam0(param0)
-					.setParam1(param1)
-					.setType(MenuAction.RUNELITE);
+			if (npc != null && npc.getName() != null && !unlockedNpcs.contains(npc.getName().toLowerCase()))
+			{
+				lockedNpc = true;
+			}
 		}
 
-		// if youre reading my code for some reason and see this, please continue with your life and pay no attention to it
+//		 if youre reading my code for some reason and see this, please continue with your life and pay no attention to it
 		if ((config.lockAttacking() && type == MenuAction.NPC_SECOND_OPTION.getId())
-				|| (config.unlockItems() && param1 == WidgetInfo.INVENTORY.getId() && !unlockedItems.contains(widget.getItemId()))
-				|| (config.lockDrinking() && option.equals("Drink"))
-				|| (config.lockEating() && option.equals("Eat"))
-				|| (config.lockEating() && option.equals("Consume"))
-				|| (config.lockCoins() && type == MenuAction.GROUND_ITEM_THIRD_OPTION.getId() && target.contains("Coins"))
+				|| (config.unlockItems() && param1 == WidgetInfo.INVENTORY.getId() && widget != null && !unlockedItems.contains(widget.getItemId()))
+				|| (config.lockDrinking() && DRINK_OPTIONS.contains(cleanOption))
+				|| (config.lockEating() && EAT_OPTIONS.contains(cleanOption))
 				|| (config.lockTeles() && option.toLowerCase().contains("teleport"))
 				|| (config.lockTeles() && target.toLowerCase().contains("teleport"))
 				|| (config.lockTeles() && option.toLowerCase().contains("tele"))
 				|| (config.lockTeles() && target.toLowerCase().contains("tele"))
-				|| (config.lockBanks() && target.toLowerCase().contains("bank"))
-				|| (config.lockGameObjects() && lockedObjects.contains(cleanTarget) && OBJECT_ACTIONS.contains(type))
-				|| (config.lockBanks() && bankObjects.contains(cleanTarget) && OBJECT_ACTIONS.contains(type))
-				|| (config.lockUnderground() && underGroundObjects.contains(cleanTarget) && OBJECT_ACTIONS.contains(type))
-				|| (config.lockBanks() && bankNpcs.contains(cleanTarget) && NPC_ACTIONS.contains(type)))
+				|| (config.lockBanks() && (BANK_OBJECT_NAMES.contains(cleanTarget) || BANK_NPC_NAMES.contains(cleanTarget)))
+				|| (config.lockCoins() && type == MenuAction.GROUND_ITEM_THIRD_OPTION.getId() && cleanTarget.equals("coins"))
+				|| (config.unlockItems() && GROUND_ITEM_ACTIONS.contains(type) && lockedObjects.contains(cleanTarget))
+				|| (config.lockGameObjects() && OBJECT_ACTIONS.contains(type) && lockedObjects.contains(cleanTarget))
+				|| (config.lockBanks() && BANK_OBJECT_NAMES.contains(cleanTarget) && OBJECT_ACTIONS.contains(type))
+				|| (config.lockUnderground() && UNDERGROUND_OBJECT_NAMES.contains(cleanTarget) && OBJECT_ACTIONS.contains(type))
+				|| (config.lockBanks() && BANK_NPC_NAMES.contains(cleanTarget) && NPC_ACTIONS.contains(type))
+				|| (config.lockThieving() && THIEVE_OPTIONS.contains(cleanOption))
+				|| (config.lockWoodcutting() && WOODCUTTING_OPTIONS.contains(cleanOption))
+				|| (config.lockFishing() && FISHING_TARGETS.contains(cleanTarget))
+				|| (config.lockSlayer() && NPC_ACTIONS.contains(type) && SLAYER_NPC_TARGETS.contains(cleanTarget))
+				|| lockedNpc)
 		{
-			event.getMenuEntry().setOption(ColorUtil.prependColorTag(option,config.overlayColour()));
-			event.getMenuEntry().setTarget(ColorUtil.prependColorTag(Text.removeTags(target),config.overlayColour()));
+			event.getMenuEntry().setOption(ColorUtil.prependColorTag(option,config.uiOverlayColour()));
+			event.getMenuEntry().setTarget(ColorUtil.prependColorTag(Text.removeTags(target),config.uiOverlayColour()));
 			event.getMenuEntry().setDeprioritized(true);
 		}
 	}
@@ -436,36 +456,53 @@ public class ThenWeFightPlugin extends Plugin
 		MenuEntry entry = event.getMenuEntry();
 		Widget widget = entry.getWidget();
 
+		if (param1 == WidgetInfo.INVENTORY.getId()
+				&& widget != null
+				&& config.unlockItems()
+				&& !client.isKeyPressed(KeyCode.KC_SHIFT))
+		{
+			boolean unlocked = unlockedItems.contains(widget.getItemId());
+
+			if (!unlocked)
+			{
+				event.consume();
+				return;
+			}
+		}
+
 		if (option.equals("Walk here") && (taskOverlayVisible || unlockOverlayVisible))
 		{
 			unlockOverlayVisible = false;
 			taskOverlayVisible = false;
 		}
 
-		if (param1 == 10747957 && option.equals(ColorUtil.prependColorTag("View Unlocks", Color.ORANGE)))
+		if (QUEST_TAB_PARAMS.contains(param1))
 		{
-			event.consume();
-			unlockOverlayVisible = true;
-			taskOverlayVisible = false;
-		}
+			if (option.equals(ColorUtil.prependColorTag("View Unlocks", Color.ORANGE)))
+			{
+				event.consume();
+				unlockOverlayVisible = true;
+				taskOverlayVisible = false;
+			}
 
-		if (param1 == 10747957 && option.equals(ColorUtil.prependColorTag("Hide Unlocks", Color.ORANGE)))
-		{
-			event.consume();
-			unlockOverlayVisible = false;
-		}
+			if (option.equals(ColorUtil.prependColorTag("Hide Unlocks", Color.ORANGE)))
+			{
+				event.consume();
+				unlockOverlayVisible = false;
+			}
 
-		if (param1 == 10747957 && option.equals(ColorUtil.prependColorTag("View Tasks", Color.ORANGE)))
-		{
-			event.consume();
-			taskOverlayVisible = true;
-			unlockOverlayVisible = false;
-		}
+			if (option.equals(ColorUtil.prependColorTag("View Tasks", Color.ORANGE)))
+			{
+				event.consume();
+				taskOverlayVisible = true;
+				unlockOverlayVisible = false;
+			}
 
-		if (param1 == 10747957 && option.equals(ColorUtil.prependColorTag("Hide Tasks", Color.ORANGE)))
-		{
-			event.consume();
-			taskOverlayVisible = false;
+			if (option.equals(ColorUtil.prependColorTag("Hide Tasks", Color.ORANGE)))
+			{
+				event.consume();
+				taskOverlayVisible = false;
+			}
 		}
 
 		if (param1 == WidgetInfo.INVENTORY.getId()
@@ -488,61 +525,120 @@ public class ThenWeFightPlugin extends Plugin
 			}
 		}
 
-		if (type == MenuAction.RUNELITE.getId() && option.equals(ColorUtil.prependColorTag("Unlock NPC", Color.ORANGE)))
+		if (type == MenuAction.RUNELITE.getId())
 		{
-			event.consume();
-
-			final int id = event.getMenuEntry().getIdentifier();
-			final NPC[] cachedNPCs = client.getCachedNPCs();
-			final NPC npc = cachedNPCs[id];
-
-			if (npc != null && npc.getName() != null)
+			if (option.equals(ColorUtil.prependColorTag("Unlock NPC", Color.ORANGE)))
 			{
-				unlockedNpcs.add(npc.getName().toLowerCase());
-				configManager.setConfiguration("thenwefight", "unlockedNpcs", unlockedNpcs.toString().replace("[", "").replace("]", ""));
+				event.consume();
+
+				final NPC[] cachedNPCs = client.getCachedNPCs();
+				final NPC npc = cachedNPCs[identifier];
+
+				if (npc != null && npc.getName() != null)
+				{
+					unlockedNpcs.add(npc.getName().toLowerCase());
+					configManager.setConfiguration("thenwefight", "unlockedNpcs", unlockedNpcs.toString().replace("[", "").replace("]", ""));
+				}
+			}
+
+			if (option.equals(ColorUtil.prependColorTag("Lock NPC", Color.ORANGE)))
+			{
+				event.consume();
+
+				final NPC[] cachedNPCs = client.getCachedNPCs();
+				final NPC npc = cachedNPCs[identifier];
+
+				if (npc != null && npc.getName() != null)
+				{
+					unlockedNpcs.remove(npc.getName().toLowerCase());
+					configManager.setConfiguration("thenwefight", "unlockedNpcs", unlockedNpcs.toString().replace("[", "").replace("]", ""));
+				}
+			}
+
+			if (option.equals(ColorUtil.prependColorTag("Lock Object", Color.ORANGE)))
+			{
+				event.consume();
+
+				lockedObjects.add(gameUtils.getGameObjectName(identifier));
+				configManager.setConfiguration("thenwefight", "lockedGameObjects", lockedObjects.toString().replace("[", "").replace("]", ""));
+			}
+
+			if (option.equals(ColorUtil.prependColorTag("Unlock Object", Color.ORANGE)))
+			{
+				event.consume();
+
+				lockedObjects.remove(gameUtils.getGameObjectName(identifier));
+				configManager.setConfiguration("thenwefight", "lockedGameObjects", lockedObjects.toString().replace("[", "").replace("]", ""));
+				pluginUtils.updateGameObjects();
+			}
+		}
+	}
+
+	@Subscribe
+	private void onMenuOpened(MenuOpened event)
+	{
+		ArrayList<MenuEntry> entries = new ArrayList<>();
+
+		for (MenuEntry entry : event.getMenuEntries())
+		{
+			String target = entry.getTarget();
+			String cleanTarget = Text.standardize(target);
+			String option = entry.getOption();
+			String cleanOption = Text.standardize(option);
+			int type = entry.getType().getId();
+			int identifier = entry.getIdentifier();
+			int param1 = entry.getParam1();
+			int param0 = entry.getParam0();
+			Widget widget = entry.getWidget();
+			boolean shiftPressed = client.isKeyPressed(KeyCode.KC_SHIFT);
+			boolean lockedNpc = false;
+
+			if (config.unlockNpcs() && NPC_ACTIONS.contains(type))
+			{
+				final NPC[] cachedNPCs = client.getCachedNPCs();
+				final NPC npc = cachedNPCs[identifier];
+
+				if (npc != null && npc.getName() != null && !unlockedNpcs.contains(npc.getName().toLowerCase()))
+				{
+					lockedNpc = true;
+				}
+			}
+
+			if (!((config.lockAttacking() && type == MenuAction.NPC_SECOND_OPTION.getId())
+					|| (config.unlockItems() && param1 == WidgetInfo.INVENTORY.getId() && widget != null && !unlockedItems.contains(widget.getItemId()))
+					|| (config.lockDrinking() && DRINK_OPTIONS.contains(cleanOption))
+					|| (config.lockEating() && EAT_OPTIONS.contains(cleanOption))
+					|| (config.lockTeles() && option.toLowerCase().contains("teleport"))
+					|| (config.lockTeles() && target.toLowerCase().contains("teleport"))
+					|| (config.lockTeles() && option.toLowerCase().contains("tele"))
+					|| (config.lockTeles() && target.toLowerCase().contains("tele"))
+					|| (config.lockBanks() && (BANK_OBJECT_NAMES.contains(cleanTarget) || BANK_NPC_NAMES.contains(cleanTarget)))
+					|| (config.lockCoins() && type == MenuAction.GROUND_ITEM_THIRD_OPTION.getId() && target.contains("Coins"))
+					|| (config.unlockItems() && GROUND_ITEM_ACTIONS.contains(type) && lockedObjects.contains(cleanTarget))
+					|| (config.lockGameObjects() && OBJECT_ACTIONS.contains(type) && lockedObjects.contains(cleanTarget))
+					|| (config.lockBanks() && BANK_OBJECT_NAMES.contains(cleanTarget) && OBJECT_ACTIONS.contains(type))
+					|| (config.lockUnderground() && UNDERGROUND_OBJECT_NAMES.contains(cleanTarget) && OBJECT_ACTIONS.contains(type))
+					|| (config.lockBanks() && BANK_NPC_NAMES.contains(cleanTarget) && NPC_ACTIONS.contains(type))
+					|| (config.lockThieving() && THIEVE_OPTIONS.contains(cleanOption))
+					|| (config.lockThieving() && THIEVE_OPTIONS.contains(cleanOption))
+					|| (config.lockWoodcutting() && WOODCUTTING_OPTIONS.contains(cleanOption))
+					|| (config.lockFishing() && FISHING_TARGETS.contains(cleanTarget))
+					|| (config.lockSlayer() && NPC_ACTIONS.contains(type) && SLAYER_NPC_TARGETS.contains(cleanTarget))
+					|| lockedNpc)
+					|| shiftPressed)
+			{
+				entries.add(entry);
 			}
 		}
 
-		if (type == MenuAction.RUNELITE.getId() && option.equals(ColorUtil.prependColorTag("Lock NPC", Color.ORANGE)))
-		{
-			event.consume();
-
-			final int id = event.getMenuEntry().getIdentifier();
-			final NPC[] cachedNPCs = client.getCachedNPCs();
-			final NPC npc = cachedNPCs[id];
-
-			if (npc != null && npc.getName() != null)
-			{
-				unlockedNpcs.remove(npc.getName().toLowerCase());
-				configManager.setConfiguration("thenwefight", "unlockedNpcs", unlockedNpcs.toString().replace("[", "").replace("]", ""));
-			}
-		}
-
-		if (type == MenuAction.RUNELITE.getId() && option.equals(ColorUtil.prependColorTag("Lock Object", Color.ORANGE)))
-		{
-			event.consume();
-			int id = event.getId();
-
-			lockedObjects.add(getGameObjectName(id));
-			configManager.setConfiguration("thenwefight", "lockedGameObjects", lockedObjects.toString().replace("[", "").replace("]", ""));
-		}
-
-		if (type == MenuAction.RUNELITE.getId() && option.equals(ColorUtil.prependColorTag("Unlock Object", Color.ORANGE)))
-		{
-			event.consume();
-			int id = event.getId();
-
-			lockedObjects.remove(getGameObjectName(id));
-			configManager.setConfiguration("thenwefight", "lockedGameObjects", lockedObjects.toString().replace("[", "").replace("]", ""));
-			updateGameObjects();
-		}
+		client.setMenuEntries(entries.toArray(new MenuEntry[0]));
 	}
 
 	@Subscribe
 	private void onGameObjectSpawned(GameObjectSpawned event)
 	{
 		GameObject object = event.getGameObject();
-		ObjectComposition objectComposition = getObjectComposition(object.getId());
+		ObjectComposition objectComposition = gameUtils.getObjectComposition(object.getId());
 
 		if (objectComposition == null || objectComposition.getName() == null || objectComposition.getName().equals(""))
 		{
@@ -551,12 +647,12 @@ public class ThenWeFightPlugin extends Plugin
 
 		String name = objectComposition.getName().toLowerCase();
 
-		if (config.lockBanks() && bankObjects.contains(name) && !gameObjects.contains(object))
+		if (config.lockBanks() && BANK_OBJECT_NAMES.contains(name) && !gameObjects.contains(object))
 		{
 			gameObjects.add(object);
 		}
 
-		if (config.lockUnderground() && underGroundObjects.contains(name) && !gameObjects.contains(object))
+		if (config.lockUnderground() && UNDERGROUND_OBJECT_NAMES.contains(name) && !gameObjects.contains(object))
 		{
 			gameObjects.add(object);
 		}
@@ -566,12 +662,12 @@ public class ThenWeFightPlugin extends Plugin
 			gameObjects.add(object);
 		}
 
-		if (config.lockDoors() && doorObjects.contains(name) && !gameObjects.contains(object))
+		if (config.lockDoors() && DOOR_OBJECT_NAMES.contains(name) && !gameObjects.contains(object))
 		{
 			gameObjects.add(object);
 		}
 
-		if (config.lockStairs() && stairObjects.contains(name) && !gameObjects.contains(object))
+		if (config.lockStairs() && STAIRS_OBJECT_NAMES.contains(name) && !gameObjects.contains(object))
 		{
 			gameObjects.add(object);
 		}
@@ -588,7 +684,7 @@ public class ThenWeFightPlugin extends Plugin
 	{
 		WallObject object = event.getWallObject();
 
-		ObjectComposition objectComposition = getObjectComposition(object.getId());
+		ObjectComposition objectComposition = gameUtils.getObjectComposition(object.getId());
 
 		if (objectComposition == null || objectComposition.getName() == null || objectComposition.getName().equals(""))
 		{
@@ -597,12 +693,12 @@ public class ThenWeFightPlugin extends Plugin
 
 		String name = objectComposition.getName().toLowerCase();
 
-		if (config.lockBanks() && bankObjects.contains(name) && !wallObjects.contains(object))
+		if (config.lockBanks() && BANK_OBJECT_NAMES.contains(name) && !wallObjects.contains(object))
 		{
 			wallObjects.add(object);
 		}
 
-		if (config.lockUnderground() && underGroundObjects.contains(name) && !wallObjects.contains(object))
+		if (config.lockUnderground() && UNDERGROUND_OBJECT_NAMES.contains(name) && !wallObjects.contains(object))
 		{
 			wallObjects.add(object);
 		}
@@ -612,12 +708,12 @@ public class ThenWeFightPlugin extends Plugin
 			wallObjects.add(object);
 		}
 
-		if (config.lockDoors() && doorObjects.contains(name) && !wallObjects.contains(object))
+		if (config.lockDoors() && DOOR_OBJECT_NAMES.contains(name) && !wallObjects.contains(object))
 		{
 			wallObjects.add(object);
 		}
 
-		if (config.lockStairs() && stairObjects.contains(name) && !wallObjects.contains(object))
+		if (config.lockStairs() && STAIRS_OBJECT_NAMES.contains(name) && !wallObjects.contains(object))
 		{
 			wallObjects.add(object);
 		}
@@ -633,7 +729,7 @@ public class ThenWeFightPlugin extends Plugin
 	private void onGroundObjectSpawned(GroundObjectSpawned event)
 	{
 		GroundObject object = event.getGroundObject();
-		ObjectComposition objectComposition = getObjectComposition(object.getId());
+		ObjectComposition objectComposition = gameUtils.getObjectComposition(object.getId());
 
 		if (objectComposition == null || objectComposition.getName() == null || objectComposition.getName().equals(""))
 		{
@@ -642,12 +738,12 @@ public class ThenWeFightPlugin extends Plugin
 
 		String name = objectComposition.getName().toLowerCase();
 
-		if (config.lockBanks() && bankObjects.contains(name) && !groundObjects.contains(object))
+		if (config.lockBanks() && BANK_OBJECT_NAMES.contains(name) && !groundObjects.contains(object))
 		{
 			groundObjects.add(object);
 		}
 
-		if (config.lockUnderground() && underGroundObjects.contains(name) && !groundObjects.contains(object))
+		if (config.lockUnderground() && UNDERGROUND_OBJECT_NAMES.contains(name) && !groundObjects.contains(object))
 		{
 			groundObjects.add(object);
 		}
@@ -657,12 +753,12 @@ public class ThenWeFightPlugin extends Plugin
 			groundObjects.add(object);
 		}
 
-		if (config.lockDoors() && doorObjects.contains(name) && !groundObjects.contains(object))
+		if (config.lockDoors() && DOOR_OBJECT_NAMES.contains(name) && !groundObjects.contains(object))
 		{
 			groundObjects.add(object);
 		}
 
-		if (config.lockStairs() && stairObjects.contains(name) && !groundObjects.contains(object))
+		if (config.lockStairs() && STAIRS_OBJECT_NAMES.contains(name) && !groundObjects.contains(object))
 		{
 			groundObjects.add(object);
 		}
@@ -684,7 +780,7 @@ public class ThenWeFightPlugin extends Plugin
 			return;
 		}
 
-		if (config.lockBanks() && bankNpcs.contains(npc.getName().toLowerCase()) && !npcs.contains(npc))
+		if (config.lockBanks() && BANK_NPC_NAMES.contains(npc.getName().toLowerCase()) && !npcs.contains(npc))
 		{
 			npcs.add(npc);
 		}
@@ -706,8 +802,8 @@ public class ThenWeFightPlugin extends Plugin
 	{
 		if (event.getGameState().equals(GameState.LOGGED_IN))
 		{
-			updateNpcs();
-			updateGameObjects();
+			pluginUtils.updateNpcs();
+			pluginUtils.updateGameObjects();
 		}
 	}
 
@@ -726,300 +822,7 @@ public class ThenWeFightPlugin extends Plugin
 		if (plane == -1 || plane != localPlane)
 		{
 			plane = localPlane;
-			updateGameObjects();
-		}
-	}
-
-	public void updateItemList()
-	{
-		unlockedItems.clear();
-		unlockedItems.addAll(stringToIntList(config.unlockedItems()));
-	}
-
-	public void updateNpcList()
-	{
-		unlockedNpcs.clear();
-		unlockedNpcs.addAll(Text.fromCSV(Text.standardize(config.unlockedNpcs())));
-
-		if (client.getGameState().equals(GameState.LOGGED_IN))
-		{
-			clientThread.invoke(this::updateNpcs);
-		}
-	}
-
-	public void updateWidgetList()
-	{
-		lockedWidgets.clear();
-		lockedWidgets.addAll(stringToIntList(config.lockedWidgets()));
-	}
-
-	public void updateGameObjectList()
-	{
-		lockedObjects.clear();
-		lockedObjects.addAll(Text.fromCSV(Text.standardize(config.lockedGameObjects())));
-
-		if (client.getGameState().equals(GameState.LOGGED_IN))
-		{
-			clientThread.invoke(this::updateGameObjects);
-		}
-	}
-
-	public void updateTaskList()
-	{
-		String raw = config.taskList();
-		rawTaskList = raw.split("\n");
-	}
-
-	public void updateGameObjects()
-	{
-		gameObjects.clear();
-		wallObjects.clear();
-		groundObjects.clear();
-
-		if (config.lockGameObjects())
-		{
-			for (String s : lockedObjects)
-			{
-				gameObjects.addAll(getGameObjects(s));
-				wallObjects.addAll(getWallObjects(s));
-				groundObjects.addAll(getGroundObjects(s));
-			}
-		}
-
-		if (config.lockBanks())
-		{
-			for (String s : bankObjects)
-			{
-				gameObjects.addAll(getGameObjects(s));
-				wallObjects.addAll(getWallObjects(s));
-				groundObjects.addAll(getGroundObjects(s));
-			}
-		}
-
-		if (config.lockUnderground())
-		{
-			for (String s : underGroundObjects)
-			{
-				gameObjects.addAll(getGameObjects(s));
-				wallObjects.addAll(getWallObjects(s));
-				groundObjects.addAll(getGroundObjects(s));
-			}
-		}
-
-		if (config.lockDoors())
-		{
-			for (String s : doorObjects)
-			{
-				gameObjects.addAll(getGameObjects(s));
-				wallObjects.addAll(getWallObjects(s));
-				groundObjects.addAll(getGroundObjects(s));
-			}
-		}
-
-		if (config.lockStairs())
-		{
-			for (String s : stairObjects)
-			{
-				gameObjects.addAll(getGameObjects(s));
-				wallObjects.addAll(getWallObjects(s));
-				groundObjects.addAll(getGroundObjects(s));
-			}
-		}
-	}
-
-	public void updateNpcs()
-	{
-		npcs.clear();
-
-		if (config.unlockNpcs())
-		{
-			npcs.addAll(getExcludedNpcs(unlockedNpcs));
-		}
-
-		if (config.lockBanks())
-		{
-			npcs.addAll(getIncludedNpcs(bankNpcs));
-		}
-	}
-
-	public List<Integer> stringToIntList(String string)
-	{
-		return (string == null || string.trim().equals("")) ? Arrays.asList(0) :
-				Arrays.stream(string.split(",")).map(String::trim).map(Integer::parseInt).collect(Collectors.toList());
-	}
-
-	public Collection<NPC> getExcludedNpcs(Collection<String> names)
-	{
-		Collection<NPC> excludedNpcs = new ArrayList<>();
-
-		for (NPC n : client.getNpcs())
-		{
-			if (n != null && n.getName() != null && !n.getName().equals("") && !names.contains(n.getName().toLowerCase()) && !npcs.contains(n))
-			{
-				excludedNpcs.add(n);
-			}
-		}
-
-		return excludedNpcs;
-	}
-
-	public Collection<NPC> getIncludedNpcs(Collection<String> names)
-	{
-		Collection<NPC> includedNpcs = new ArrayList<>();
-
-		for (NPC n : client.getNpcs())
-		{
-			if (n != null && n.getName() != null && !n.getName().equals("") && names.contains(n.getName().toLowerCase()) && !npcs.contains(n))
-			{
-				includedNpcs.add(n);
-			}
-		}
-
-		return includedNpcs;
-	}
-
-	public Collection<GameObject> getGameObjects(String names)
-	{
-		Player local = client.getLocalPlayer();
-		final Scene scene = client.getScene();
-		final Tile[][][] tiles = scene.getTiles();
-		Collection<GameObject> tileGameObjects = new ArrayList<>();
-
-		for (Tile[] tiles1 : tiles[local.getWorldLocation().getPlane()])
-		{
-			for (Tile tile : tiles1)
-			{
-				if (tile == null)
-				{
-					continue;
-				}
-
-				for (GameObject g : tile.getGameObjects())
-				{
-					if (g == null || g.getWorldLocation().getPlane() != local.getWorldLocation().getPlane())
-					{
-						continue;
-					}
-
-					String name = getGameObjectName(g.getId());
-
-					if (name == null || name.equals(""))
-					{
-						continue;
-					}
-
-					if (names.contains(name) && !tileGameObjects.contains(g) && !gameObjects.contains(g))
-					{
-						tileGameObjects.add(g);
-					}
-				}
-			}
-		}
-
-		return tileGameObjects;
-	}
-
-	public Collection<WallObject> getWallObjects(String names)
-	{
-		Player local = client.getLocalPlayer();
-		final Scene scene = client.getScene();
-		final Tile[][][] tiles = scene.getTiles();
-		Collection<WallObject> tileWallObjects = new ArrayList<>();
-
-		for (Tile[] tiles1 : tiles[local.getWorldLocation().getPlane()])
-		{
-			for (Tile tile : tiles1)
-			{
-				if (tile == null)
-				{
-					continue;
-				}
-
-				if (tile.getWallObject() == null || tile.getWallObject().getWorldLocation().getPlane() != local.getWorldLocation().getPlane())
-				{
-					continue;
-				}
-
-				String name = getGameObjectName(tile.getWallObject().getId());
-
-				if (name == null || name.equals(""))
-				{
-					continue;
-				}
-
-				if (names.contains(name) && !tileWallObjects.contains(tile.getWallObject()) && !wallObjects.contains(tile.getWallObject()))
-				{
-					tileWallObjects.add(tile.getWallObject());
-				}
-			}
-		}
-
-		return tileWallObjects;
-	}
-
-	public Collection<GroundObject> getGroundObjects(String names)
-	{
-		Player local = client.getLocalPlayer();
-		final Scene scene = client.getScene();
-		final Tile[][][] tiles = scene.getTiles();
-		Collection<GroundObject> tileGroundObjects = new ArrayList<>();
-
-		for (Tile[] tiles1 : tiles[local.getWorldLocation().getPlane()])
-		{
-			for (Tile tile : tiles1)
-			{
-				if (tile == null || tile.getGroundObject() == null || tile.getGroundObject().getWorldLocation().getPlane() != local.getWorldLocation().getPlane())
-				{
-					continue;
-				}
-
-				String name = getGameObjectName(tile.getGroundObject().getId());
-
-				if (name == null || name.equals(""))
-				{
-					continue;
-				}
-
-				if (names.contains(name) && !tileGroundObjects.contains(tile.getGroundObject()) && !groundObjects.contains(tile.getGroundObject()))
-				{
-					tileGroundObjects.add(tile.getGroundObject());
-				}
-			}
-		}
-
-		return tileGroundObjects;
-	}
-
-	@Nullable
-	private ObjectComposition getObjectComposition(int id)
-	{
-		ObjectComposition objectComposition = client.getObjectDefinition(id);
-		return objectComposition.getImpostorIds() == null ? objectComposition : objectComposition.getImpostor();
-	}
-
-	public String getGameObjectName(int id)
-	{
-		ObjectComposition objectComposition = getObjectComposition(id);
-
-		if (objectComposition == null || objectComposition.getName() == null || objectComposition.getName().equals(""))
-		{
-			return "";
-		}
-
-		return objectComposition.getName().toLowerCase();
-	}
-
-	public void loadResources()
-	{
-		try {
-			background = ImageUtil.loadImageResource(getClass(), BACKGROUND_PATH);
-			debugBackground = ImageUtil.loadImageResource(getClass(), DEBUG_PATH);
-			runOrb = ImageUtil.loadImageResource(getClass(), RUN_PATH);
-			specOrb = ImageUtil.loadImageResource(getClass(), SPEC_PATH);
-			healthOrb = ImageUtil.loadImageResource(getClass(), HEALTH_PATH);
-			prayerOrb = ImageUtil.loadImageResource(getClass(), PRAYER_PATH);
-		} catch (Exception e){
-			log.error("thenwefightplugin, error loading image resources", e);
+			pluginUtils.updateGameObjects();
 		}
 	}
 

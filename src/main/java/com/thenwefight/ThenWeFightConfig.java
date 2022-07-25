@@ -28,13 +28,26 @@ public interface ThenWeFightConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-			keyName = "overlayColour",
-			name = "Overlay Colour",
-			description = "Colour of overlays",
+			keyName = "gameOverlayColour",
+			name = "Game Overlay Colour",
+			description = "Colour of overlays that are drawn within the game frame",
+			position = 1,
+			section = overlay
+	)
+	default Color gameOverlayColour()
+	{
+		return Color.GRAY;
+	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "uiOverlayColour",
+			name = "UI Overlay Colour",
+			description = "Colour of overlays that are drawn on the UI",
 			position = 2,
 			section = overlay
 	)
-	default Color overlayColour()
+	default Color uiOverlayColour()
 	{
 		return Color.GRAY;
 	}
@@ -251,14 +264,14 @@ public interface ThenWeFightConfig extends Config
 	)
 	default boolean lockRunEnergy() { return true; }
 
-	@ConfigItem(
-			name = "Lock Prayers",
-			description = "Enable Greying out prayer orb and prayer book",
-			position = 120,
-			keyName = "lockPrayers",
-			section = feature
-	)
-	default boolean lockPrayers() { return true; }
+//	@ConfigItem(
+//			name = "Lock Prayers",
+//			description = "Enable Greying out prayer orb and prayer book",
+//			position = 120,
+//			keyName = "lockPrayers",
+//			section = feature
+//	)
+//	default boolean lockPrayers() { return true; }
 
 	@ConfigItem(
 			name = "Lock Special Attack",
@@ -269,14 +282,14 @@ public interface ThenWeFightConfig extends Config
 	)
 	default boolean lockSpec() { return true; }
 
-	@ConfigItem(
-			name = "Lock HP Orb",
-			description = "Enable Greying out HP Orb",
-			position = 130,
-			keyName = "lockHpOrb",
-			section = feature
-	)
-	default boolean lockHpOrb() { return true; }
+//	@ConfigItem(
+//			name = "Lock HP Orb",
+//			description = "Enable Greying out HP Orb",
+//			position = 130,
+//			keyName = "lockHpOrb",
+//			section = feature
+//	)
+//	default boolean lockHpOrb() { return true; }
 
 	@ConfigItem(
 			name = "Lock Emotes",
@@ -531,24 +544,295 @@ public interface ThenWeFightConfig extends Config
 	)
 	default boolean lockFarming() { return true; }
 
+	// PRAYER SETTINGS
+
+	@ConfigSection(
+			name = "Unlock Prayers",
+			description = "Prayer Settings",
+			position = 17,
+			closedByDefault = true
+	)
+	String prayers = "Prayers";
+
+	@ConfigItem(
+			name = "Lock Thick Skin",
+			description = "Enable Greying out Thick Skin Prayer",
+			position = 10,
+			keyName = "lockThickSkin",
+			section = prayers
+	)
+	default boolean lockThickSkin() { return true; }
+
+	@ConfigItem(
+			name = "Lock Burst of Stregth",
+			description = "Enable Greying out Burst of Stregth Prayer",
+			position = 20,
+			keyName = "lockBurstOfStrength",
+			section = prayers
+	)
+	default boolean lockBurstOfStrength() { return true; }
+
+	@ConfigItem(
+			name = "Lock Clarity of Thought",
+			description = "Enable Greying out Clarity of Thought Prayer",
+			position = 30,
+			keyName = "lockClarityOfThought",
+			section = prayers
+	)
+	default boolean lockClarityOfThought() { return true; }
+
+	@ConfigItem(
+			name = "Lock Sharp Eye",
+			description = "Enable Greying out Sharp Eye Prayer",
+			position = 40,
+			keyName = "lockSharpEye",
+			section = prayers
+	)
+	default boolean lockSharpEye() { return true; }
+
+	@ConfigItem(
+			name = "Lock Mystic Will",
+			description = "Enable Greying out Mystic Will Prayer",
+			position = 50,
+			keyName = "lockMysticWill",
+			section = prayers
+	)
+	default boolean lockMysticWill() { return true; }
+
+	@ConfigItem(
+			name = "Lock Rock Skin",
+			description = "Enable Greying out Rock Skin Prayer",
+			position = 60,
+			keyName = "lockRockSkin",
+			section = prayers
+	)
+	default boolean lockRockSkin() { return true; }
+
+	@ConfigItem(
+			name = "Lock Superhuman Strength",
+			description = "Enable Greying out Superhuman Strength Prayer",
+			position = 70,
+			keyName = "lockSuperhumanStrength",
+			section = prayers
+	)
+	default boolean lockSuperhumanStrength() { return true; }
+
+	@ConfigItem(
+			name = "Lock Improved Reflexes",
+			description = "Enable Greying out Improved Reflexes Prayer",
+			position = 80,
+			keyName = "lockImprovedReflexes",
+			section = prayers
+	)
+	default boolean lockImprovedReflexes() { return true; }
+
+	@ConfigItem(
+			name = "Lock Rapid Restore",
+			description = "Enable Greying out Rapid Restore Prayer",
+			position = 90,
+			keyName = "lockRapidRestore",
+			section = prayers
+	)
+	default boolean lockRapidRestore() { return true; }
+
+	@ConfigItem(
+			name = "Lock Rapid Heal",
+			description = "Enable Greying out Rapid Heal Prayer",
+			position = 100,
+			keyName = "lockRapidHeal",
+			section = prayers
+	)
+	default boolean lockRapidHeal() { return true; }
+
+	@ConfigItem(
+			name = "Lock Protect Item",
+			description = "Enable Greying out Protect Item Prayer",
+			position = 110,
+			keyName = "lockProtectItem",
+			section = prayers
+	)
+	default boolean lockProtectItem() { return true; }
+
+	@ConfigItem(
+			name = "Lock Hawk Eye",
+			description = "Enable Greying out Hawk Eye Prayer",
+			position = 120,
+			keyName = "lockHawkEye",
+			section = prayers
+	)
+	default boolean lockHawkEye() { return true; }
+
+	@ConfigItem(
+			name = "Lock Mystic Lore",
+			description = "Enable Greying out Mystic Lore Prayer",
+			position = 130,
+			keyName = "lockMysticLore",
+			section = prayers
+	)
+	default boolean lockMysticLore() { return true; }
+
+	@ConfigItem(
+			name = "Lock Steel Skin",
+			description = "Enable Greying out Steel Skin Prayer",
+			position = 140,
+			keyName = "lockSteelSkin",
+			section = prayers
+	)
+	default boolean lockSteelSkin() { return true; }
+
+	@ConfigItem(
+			name = "Lock Ultimate Strength",
+			description = "Enable Greying out Ultimate Strength Prayer",
+			position = 150,
+			keyName = "lockUltimateStrength",
+			section = prayers
+	)
+	default boolean lockUltimateStrength() { return true; }
+
+	@ConfigItem(
+			name = "Lock Incredible Reflexes",
+			description = "Enable Greying out Incredible Reflexes Prayer",
+			position = 160,
+			keyName = "lockIncredibleReflexes",
+			section = prayers
+	)
+	default boolean lockIncredibleReflexes() { return true; }
+
+	@ConfigItem(
+			name = "Lock Protect From Magic",
+			description = "Enable Greying out Protect From Magic Prayer",
+			position = 170,
+			keyName = "lockProtectFromMagic",
+			section = prayers
+	)
+	default boolean lockProtectFromMagic() { return true; }
+
+	@ConfigItem(
+			name = "Lock Protect From Missiles",
+			description = "Enable Greying out Protect From Missiles Prayer",
+			position = 180,
+			keyName = "lockProtectFromMissiles",
+			section = prayers
+	)
+	default boolean lockProtectFromMissiles() { return true; }
+
+	@ConfigItem(
+			name = "Lock Protect From Melee",
+			description = "Enable Greying out Protect From Melee Prayer",
+			position = 190,
+			keyName = "lockProtectFromMelee",
+			section = prayers
+	)
+	default boolean lockProtectFromMelee() { return true; }
+
+	@ConfigItem(
+			name = "Lock Eagle Eye",
+			description = "Enable Greying out Eagle Eye Prayer",
+			position = 200,
+			keyName = "lockEagleEye",
+			section = prayers
+	)
+	default boolean lockEagleEye() { return true; }
+
+	@ConfigItem(
+			name = "Lock Mystic Might",
+			description = "Enable Greying out Mystic Might Prayer",
+			position = 210,
+			keyName = "lockMysticMight",
+			section = prayers
+	)
+	default boolean lockMysticMight() { return true; }
+
+	@ConfigItem(
+			name = "Lock Retribution",
+			description = "Enable Greying out Retribution Prayer",
+			position = 220,
+			keyName = "lockRetribution",
+			section = prayers
+	)
+	default boolean lockRetribution() { return true; }
+
+	@ConfigItem(
+			name = "Lock Redemption",
+			description = "Enable Greying out Redemption Prayer",
+			position = 230,
+			keyName = "lockRedemption",
+			section = prayers
+	)
+	default boolean lockRedemption() { return true; }
+
+	@ConfigItem(
+			name = "Lock Smite",
+			description = "Enable Greying out Smite Prayer",
+			position = 240,
+			keyName = "lockSmite",
+			section = prayers
+	)
+	default boolean lockSmite() { return true; }
+
+	@ConfigItem(
+			name = "Lock Preserve",
+			description = "Enable Greying out Preserve Prayer",
+			position = 250,
+			keyName = "lockPreserve",
+			section = prayers
+	)
+	default boolean lockPreserve() { return true; }
+
+	@ConfigItem(
+			name = "Lock Chivalry",
+			description = "Enable Greying out Chivalry Prayer",
+			position = 260,
+			keyName = "lockChivalry",
+			section = prayers
+	)
+	default boolean lockChivalry() { return true; }
+
+	@ConfigItem(
+			name = "Lock Piety",
+			description = "Enable Greying out Piety Prayer",
+			position = 270,
+			keyName = "lockPiety",
+			section = prayers
+	)
+	default boolean lockPiety() { return true; }
+
+	@ConfigItem(
+			name = "Lock Rigour",
+			description = "Enable Greying out Rigour Prayer",
+			position = 280,
+			keyName = "lockRigour",
+			section = prayers
+	)
+	default boolean lockRigour() { return true; }
+
+	@ConfigItem(
+			name = "Lock Augury",
+			description = "Enable Greying out Augury Prayer",
+			position = 290,
+			keyName = "lockAugury",
+			section = prayers
+	)
+	default boolean lockAugury() { return true; }
+
 	// TASK SETTINGS
 
 	@ConfigSection(
 			name = "Tasks",
 			description = "Tasks",
-			position = 19,
+			position = 18,
 			closedByDefault = true
 	)
 	String tasks = "Tasks";
 
 	@ConfigItem(
-			name = "Task Offset",
-			description = "How many tasks into the list to start rendering them",
+			name = "Task Scroll",
+			description = "How many tasks into the list to start displaying them",
 			position = 5,
-			keyName = "taskOffset",
+			keyName = "taskScroll",
 			section = tasks
 	)
-	default int taskOffset() { return 0; }
+	default int taskScroll() { return 0; }
 
 	@ConfigItem(
 			name = "Task List",
@@ -558,6 +842,34 @@ public interface ThenWeFightConfig extends Config
 			section = tasks
 	)
 	default String taskList() { return "Y,20, Thing"; }
+
+	// UNLOCK SETTINGS
+
+	@ConfigSection(
+			name = "Unlocks",
+			description = "Unlocks",
+			position = 19,
+			closedByDefault = true
+	)
+	String unlocks = "Unlocks";
+
+	@ConfigItem(
+			name = "Unlock Scroll",
+			description = "How many unlocks into the list to start displaying them",
+			position = 5,
+			keyName = "unlockScroll",
+			section = unlocks
+	)
+	default int unlockScroll() { return 0; }
+
+	@ConfigItem(
+			name = "Unlock List",
+			description = "Unlock List to display in the form [Y/N,[FILENAME / Item ID],Title,Price]",
+			position = 10,
+			keyName = "unlockList",
+			section = unlocks
+	)
+	default String unlockList() { return "Y,20, Thing"; }
 
 	// UNLOCK SLOT 1 SETTINGS
 
