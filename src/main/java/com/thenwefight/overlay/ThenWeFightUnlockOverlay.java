@@ -3,6 +3,7 @@ package com.thenwefight.overlay;
 import com.google.common.base.Strings;
 import com.thenwefight.ThenWeFightConfig;
 import com.thenwefight.ThenWeFightPlugin;
+import com.thenwefight.utils.PluginUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.client.game.ItemManager;
@@ -20,15 +21,18 @@ import java.awt.*;
 @Singleton
 public
 class ThenWeFightUnlockOverlay extends Overlay {
+
     @Inject
     private ItemManager itemManager;
+    @Inject
+    private PluginUtils pluginUtils;
 
     private final Client client;
     private final ThenWeFightConfig config;
     private final ThenWeFightPlugin plugin;
 
     private static final Font FONT = FontManager.getRunescapeFont().deriveFont(Font.BOLD, 16);
-    private static final String TITLE = "Unlock Overlay";
+    private static final String TITLE = "Then We Fight Unlocks";
 
 
     @Inject
@@ -73,138 +77,137 @@ class ThenWeFightUnlockOverlay extends Overlay {
         renderTextLocation(graphics, title, TITLE, Color.YELLOW);
         renderTextLocation(graphics, points, config.points(), Color.YELLOW);
 
-        renderSlot(graphics, overlay, 1);
-        renderSlot(graphics, overlay, 2);
-        renderSlot(graphics, overlay, 3);
-        renderSlot(graphics, overlay, 4);
-        renderSlot(graphics, overlay, 5);
-        renderSlot(graphics, overlay, 6);
+        renderSlots(graphics, overlay);
 
         return null;
     }
 
-    public void renderSlot(Graphics2D graphics, Point overlay, int slot)
+    public void renderSlots(Graphics2D graphics, Point overlay)
     {
-        boolean unlocked = false;
-        String title = null;
+        for (int i = config.unlockScroll(); i <= ThenWeFightPlugin.rawUnlockList.length; i++)
+        {
+            if (i >= config.unlockScroll() + 6) {
+                break;
+            }
+
+            if (i >= ThenWeFightPlugin.rawUnlockList.length || ThenWeFightPlugin.rawUnlockList[i] == null) {
+                continue;
+            }
+
+            String[] parsed = ThenWeFightPlugin.rawUnlockList[i].split(",");
+
+            if (parsed == null || parsed.length != 4) {
+                continue;
+            }
+
+            boolean unlocked = parsed[0].equalsIgnoreCase("y");
+            boolean useItemImage = pluginUtils.isNumeric(parsed[1]);
+            String points = parsed[2] + " Points";
+            String title = parsed[3];
+            int itemId = -1;
+
+            if (useItemImage)
+            {
+                itemId = Integer.parseInt(parsed[1]);
+            }
+
+            renderSlot(graphics, overlay, i - config.unlockScroll() + 1, unlocked, title, points, useItemImage, itemId);
+        }
+    }
+
+    public void renderSlot(Graphics2D graphics, Point overlay, int slot, boolean unlocked, String title, String price, boolean useItemImage, int itemId)
+    {
         Point titlePoint = null;
-        boolean useItemImage = true;
-        int itemId = 0;
         int iamgeWidth = config.unlockImageWidth();
         int imageHeight = config.unlockImageHeight();
         Image itemImage = null;
         Point imagePoint = null;
-        String price = null;
         Point pricePoint = null;
 
         switch(slot)
         {
             case 1:
-                if (!config.slot1Title().equals(""))
+                if (!title.equals(""))
                 {
-                    if (plugin.getU1Custom() != null)
+                    if (!useItemImage && plugin.getU1Custom() == null)
                     {
-                        useItemImage = config.slot1UseItem();
+                        useItemImage = true;
                     }
 
-                    unlocked = config.slot1Unlocked();
-                    title = config.slot1Title();
-                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot1Title())/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 97);
-                    itemId = config.slot1Id();
+                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(title)/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 97);
                     itemImage = (useItemImage ? itemManager.getImage(itemId) : plugin.getU1Custom()).getScaledInstance(iamgeWidth, imageHeight, 1);
                     imagePoint = new Point(overlay.x + 88 - (iamgeWidth / 2), overlay.y + 72 - (imageHeight / 2));
-                    price = config.slot1Price();
-                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot1Price())/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 122);
+                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(price)/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 122);
                 }
                 break;
             case 2:
-                if (!config.slot2Title().equals(""))
+                if (!title.equals(""))
                 {
-                    if (plugin.getU2Custom() != null)
+                    if (!useItemImage && plugin.getU2Custom() == null)
                     {
-                        useItemImage = config.slot2UseItem();
+                        useItemImage = true;
                     }
 
-                    unlocked = config.slot2Unlocked();
-                    title = config.slot2Title();
-                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot2Title())/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 97);
-                    itemId = config.slot2Id();
+                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(title)/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 97);
                     itemImage = (useItemImage ? itemManager.getImage(itemId) : plugin.getU2Custom()).getScaledInstance(iamgeWidth, imageHeight, 1);
                     imagePoint = new Point(overlay.x + 242 - (iamgeWidth / 2), overlay.y + 72 - (imageHeight / 2));
-                    price = config.slot2Price();
-                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot2Price())/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 122);
+                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(price)/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 122);
                 }
                 break;
             case 3:
-                if (!config.slot3Title().equals(""))
+                if (!title.equals(""))
                 {
-                    if (plugin.getU3Custom() != null)
+                    if (!useItemImage && plugin.getU3Custom() == null)
                     {
-                        useItemImage = config.slot3UseItem();
+                        useItemImage = true;
                     }
 
-                    unlocked = config.slot3Unlocked();
-                    title = config.slot3Title();
-                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot3Title())/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 97);
-                    itemId = config.slot3Id();
+                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(title)/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 97);
                     itemImage = (useItemImage ? itemManager.getImage(itemId) : plugin.getU3Custom()).getScaledInstance(iamgeWidth, imageHeight, 1);
                     imagePoint = new Point(overlay.x + 396 - (iamgeWidth / 2), overlay.y + 72 - (imageHeight / 2));
-                    price = config.slot3Price();
-                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot3Price())/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 122);
+                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(price)/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 122);
                 }
                 break;
             case 4:
-                if (!config.slot4Title().equals(""))
+                if (!title.equals(""))
                 {
-                    if (plugin.getU4Custom() != null)
+                    if (!useItemImage && plugin.getU4Custom() == null)
                     {
-                        useItemImage = config.slot4UseItem();
+                        useItemImage = true;
                     }
 
-                    unlocked = config.slot4Unlocked();
-                    title = config.slot4Title();
-                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot4Title())/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 227);
-                    itemId = config.slot4Id();
+                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(title)/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 227);
                     itemImage = (useItemImage ? itemManager.getImage(itemId) : plugin.getU4Custom()).getScaledInstance(iamgeWidth, imageHeight, 1);
                     imagePoint = new Point(overlay.x + 88 - (iamgeWidth / 2), overlay.y + 202 - (imageHeight / 2));
-                    price = config.slot4Price();
-                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot4Price())/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 252);
+                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(price)/ 2) + 90, overlay.y + graphics.getFontMetrics().getHeight() + 252);
                 }
                 break;
             case 5:
-                if (!config.slot5Title().equals(""))
+                if (!title.equals(""))
                 {
-                    if (plugin.getU5Custom() != null)
+                    if (!useItemImage && plugin.getU5Custom() == null)
                     {
-                        useItemImage = config.slot5UseItem();
+                        useItemImage = true;
                     }
 
-                    unlocked = config.slot5Unlocked();
-                    title = config.slot5Title();
-                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot5Title())/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 227);
-                    itemId = config.slot5Id();
+                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(title)/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 227);
                     itemImage = (useItemImage ? itemManager.getImage(itemId) : plugin.getU5Custom()).getScaledInstance(iamgeWidth, imageHeight, 1);
                     imagePoint = new Point(overlay.x + 242 - (iamgeWidth / 2), overlay.y + 202 - (imageHeight / 2));
-                    price = config.slot5Price();
-                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot5Price())/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 252);
+                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(price)/ 2) + 244, overlay.y + graphics.getFontMetrics().getHeight() + 252);
                 }
                 break;
             case 6:
-                if (!config.slot6Title().equals(""))
+                if (!title.equals(""))
                 {
-                    if (plugin.getU6Custom() != null)
+                    if (!useItemImage && plugin.getU6Custom() == null)
                     {
-                        useItemImage = config.slot6UseItem();
+                        useItemImage = true;
                     }
 
-                    unlocked = config.slot6Unlocked();
-                    title = config.slot6Title();
-                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot6Title())/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 227);
-                    itemId = config.slot6Id();
+                    titlePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(title)/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 227);
                     itemImage = (useItemImage ? itemManager.getImage(itemId) : plugin.getU6Custom()).getScaledInstance(iamgeWidth, imageHeight, 1);
                     imagePoint = new Point(overlay.x + 396 - (iamgeWidth / 2), overlay.y + 202 - (imageHeight / 2));
-                    price = config.slot6Price();
-                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(config.slot6Price())/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 252);
+                    pricePoint = new Point(overlay.x - (graphics.getFontMetrics().stringWidth(price)/ 2) + 398, overlay.y + graphics.getFontMetrics().getHeight() + 252);
                 }
                 break;
         }

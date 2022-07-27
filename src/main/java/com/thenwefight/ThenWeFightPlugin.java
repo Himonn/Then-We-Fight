@@ -66,6 +66,7 @@ public class ThenWeFightPlugin extends Plugin
 	private GameUtils gameUtils;
 
 	public static String[] rawTaskList;
+	public static String[] rawUnlockList;
 
 	public static List<Integer> unlockedItems = new ArrayList<>();
 	public static List<String> unlockedNpcs = new ArrayList<>();
@@ -93,12 +94,12 @@ public class ThenWeFightPlugin extends Plugin
 	public static Collection<GroundObject> groundObjects = new ArrayList<>();
 	public static Collection<NPC> npcs = new ArrayList<>();
 
-	public static final File U_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/1.png");
-	public static final File U_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/2.png");
-	public static final File U_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/3.png");
-	public static final File U_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/4.png");
-	public static final File U_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/5.png");
-	public static final File U_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/6.png");
+	public static File U_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/1.png");
+	public static File U_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/2.png");
+	public static File U_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/3.png");
+	public static File U_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/4.png");
+	public static File U_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/5.png");
+	public static File U_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/6.png");
 
 	public static final Collection<Integer> OBJECT_ACTIONS = Arrays.asList(MenuAction.EXAMINE_OBJECT.getId(),
 			MenuAction.GAME_OBJECT_FIRST_OPTION.getId(), MenuAction.GAME_OBJECT_SECOND_OPTION.getId(),
@@ -194,13 +195,15 @@ public class ThenWeFightPlugin extends Plugin
 		overlayManager.add(widgetOverlay);
 		overlayManager.add(taskOverlay);
 
+		pluginUtils.updateUnlockList();
+		pluginUtils.setCustomImageFilePaths();
 		pluginUtils.updateItemList();
 		pluginUtils.updateNpcList();
 		pluginUtils.updateWidgetList();
 		pluginUtils.updateGameObjectList();
 		pluginUtils.updateTaskList();
 		pluginUtils.loadResources();
-		pluginUtils.loadCustomImages();
+
 
 		unlockOverlayVisible = false;
 		taskOverlayVisible = false;
@@ -217,12 +220,13 @@ public class ThenWeFightPlugin extends Plugin
 		overlayManager.remove(widgetOverlay);
 		overlayManager.remove(taskOverlay);
 
+		pluginUtils.updateUnlockList();
+		pluginUtils.setCustomImageFilePaths();
 		pluginUtils.updateItemList();
 		pluginUtils.updateNpcList();
 		pluginUtils.updateWidgetList();
 		pluginUtils.updateGameObjectList();
 		pluginUtils.loadResources();
-		pluginUtils.loadCustomImages();
 
 		unlockOverlayVisible = false;
 		taskOverlayVisible = false;
@@ -268,6 +272,22 @@ public class ThenWeFightPlugin extends Plugin
 		if (event.getKey().equals("taskList"))
 		{
 			pluginUtils.updateTaskList();
+		}
+
+		if (event.getKey().equals("unlockList"))
+		{
+			pluginUtils.updateUnlockList();
+			pluginUtils.setCustomImageFilePaths();
+		}
+
+		if (event.getKey().equals("unlockScroll"))
+		{
+			pluginUtils.setCustomImageFilePaths();
+		}
+
+		if (event.getKey().equals("imageWidth") || event.getKey().equals("imageHeight"))
+		{
+			pluginUtils.setCustomImageFilePaths();
 		}
 	}
 

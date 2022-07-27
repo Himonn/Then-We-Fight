@@ -28,7 +28,7 @@ class ThenWeFightTaskOverlay extends Overlay {
     private final ThenWeFightPlugin plugin;
 
     private static final Font FONT = FontManager.getRunescapeFont().deriveFont(Font.BOLD, 16);
-    private static final String TITLE = "Task Overlay";
+    private static final String TITLE = "Then We Fight Tasks";
 
 
     @Inject
@@ -87,7 +87,6 @@ class ThenWeFightTaskOverlay extends Overlay {
 
             String[] parsed = ThenWeFightPlugin.rawTaskList[i].split(",");
 
-//            if (parsed == null || parsed.length != 3)
             if (parsed == null || parsed.length != 3)
             {
                 continue;

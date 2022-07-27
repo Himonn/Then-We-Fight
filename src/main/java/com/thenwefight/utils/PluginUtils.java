@@ -8,6 +8,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.RuneLite;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ItemManager;
@@ -16,6 +17,7 @@ import net.runelite.client.util.Text;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,21 +42,106 @@ public class PluginUtils {
     @Inject
     private GameUtils gameUtils;
 
+    public void setCustomImageFilePaths()
+    {
+        int unlockListLength = rawUnlockList.length;
+
+        if (unlockListLength < 1)
+        {
+            return;
+        }
+
+        String path1 = rawUnlockList[config.unlockScroll()].split(",")[1];
+
+        if (!isNumeric(path1))
+        {
+            U_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/" + path1);
+        }
+
+        if (unlockListLength < 2)
+        {
+            return;
+        }
+
+        String path2 = rawUnlockList[config.unlockScroll() + 1].split(",")[1];
+
+        if (!isNumeric(path2))
+        {
+            U_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/" + path2);
+        }
+
+        if (unlockListLength < 3)
+        {
+            return;
+        }
+
+        String path3 = rawUnlockList[config.unlockScroll() + 2].split(",")[1];
+
+        if (!isNumeric(path3))
+        {
+            U_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/" + path3);
+        }
+
+        if (unlockListLength < 4)
+        {
+            return;
+        }
+
+        String path4 = rawUnlockList[config.unlockScroll() + 3].split(",")[1];
+
+        if (!isNumeric(path4))
+        {
+            U_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/" + path4);
+        }
+
+        if (unlockListLength < 5)
+        {
+            return;
+        }
+
+        String path5 = rawUnlockList[config.unlockScroll() + 4].split(",")[1];
+
+        if (!isNumeric(path5))
+        {
+            U_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/" + path5);
+        }
+
+        if (unlockListLength < 6)
+        {
+            return;
+        }
+
+        String path6 = rawUnlockList[config.unlockScroll() + 5].split(",")[1];
+
+        if (!isNumeric(path6))
+        {
+            U_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/" + path6);
+        }
+
+        loadCustomImages();
+    }
+
     public void loadCustomImages()
     {
+        int imageWidth = config.unlockImageWidth();
+        int imageHeight = config.unlockImageHeight();
+
         if (U_1_CUSTOM_DIR.exists())
         {
             try
             {
                 synchronized (ImageIO.class)
                 {
-                    plugin.u1Custom = ImageIO.read(U_1_CUSTOM_DIR);
+                    plugin.u1Custom = ImageIO.read(U_1_CUSTOM_DIR).getScaledInstance(imageWidth, imageHeight, 1);
                 }
             }
             catch (Exception e)
             {
                 log.error("thenwefightplugin: error setting custom task 1 image", e);
             }
+        } else {
+            log.error("thenwefightplugin: error cannot find image in " + U_1_CUSTOM_DIR.getAbsolutePath());
+            plugin.u1Custom = null;
         }
 
         if (U_2_CUSTOM_DIR.exists())
@@ -63,13 +150,16 @@ public class PluginUtils {
             {
                 synchronized (ImageIO.class)
                 {
-                    plugin.u2Custom = ImageIO.read(U_2_CUSTOM_DIR);
+                    plugin.u2Custom = ImageIO.read(U_2_CUSTOM_DIR).getScaledInstance(imageWidth, imageHeight, 1);
                 }
             }
             catch (Exception e)
             {
                 log.error("thenwefightplugin: error setting custom task 2 image", e);
             }
+        } else {
+            log.error("thenwefightplugin: error cannot find image in " + U_2_CUSTOM_DIR.getAbsolutePath());
+            plugin.u2Custom = null;
         }
 
         if (U_3_CUSTOM_DIR.exists())
@@ -78,13 +168,16 @@ public class PluginUtils {
             {
                 synchronized (ImageIO.class)
                 {
-                    plugin.u3Custom = ImageIO.read(U_3_CUSTOM_DIR);
+                    plugin.u3Custom = ImageIO.read(U_3_CUSTOM_DIR).getScaledInstance(imageWidth, imageHeight, 1);
                 }
             }
             catch (Exception e)
             {
                 log.error("thenwefightplugin: error setting custom task 3 image", e);
             }
+        } else {
+            log.error("thenwefightplugin: error cannot find image in " + U_3_CUSTOM_DIR.getAbsolutePath());
+            plugin.u3Custom = null;
         }
 
         if (U_4_CUSTOM_DIR.exists())
@@ -93,13 +186,16 @@ public class PluginUtils {
             {
                 synchronized (ImageIO.class)
                 {
-                    plugin.u4Custom = ImageIO.read(U_4_CUSTOM_DIR);
+                    plugin.u4Custom = ImageIO.read(U_4_CUSTOM_DIR).getScaledInstance(imageWidth, imageHeight, 1);
                 }
             }
             catch (Exception e)
             {
                 log.error("thenwefightplugin: error setting custom task 4 image", e);
             }
+        } else {
+            log.error("thenwefightplugin: error cannot find image in " + U_4_CUSTOM_DIR.getAbsolutePath());
+            plugin.u4Custom = null;
         }
 
         if (U_5_CUSTOM_DIR.exists())
@@ -108,13 +204,17 @@ public class PluginUtils {
             {
                 synchronized (ImageIO.class)
                 {
-                    plugin.u5Custom = ImageIO.read(U_5_CUSTOM_DIR);
+                    plugin.u5Custom = ImageIO.read(U_5_CUSTOM_DIR).getScaledInstance(imageWidth, imageHeight, 1);
                 }
             }
             catch (Exception e)
             {
                 log.error("thenwefightplugin: error setting custom task 5 image", e);
             }
+        } else {
+            log.error("thenwefightplugin: error cannot find image in " + U_5_CUSTOM_DIR.getAbsolutePath());
+
+            plugin.u5Custom = null;
         }
 
         if (U_6_CUSTOM_DIR.exists())
@@ -123,13 +223,16 @@ public class PluginUtils {
             {
                 synchronized (ImageIO.class)
                 {
-                    plugin.u6Custom = ImageIO.read(U_6_CUSTOM_DIR);
+                    plugin.u6Custom = ImageIO.read(U_6_CUSTOM_DIR).getScaledInstance(imageWidth, imageHeight, 1);
                 }
             }
             catch (Exception e)
             {
                 log.error("thenwefightplugin: error setting custom task 6 image", e);
             }
+        } else {
+            log.error("thenwefightplugin: error cannot find image in " + U_6_CUSTOM_DIR.getAbsolutePath());
+            plugin.u6Custom = null;
         }
     }
 
@@ -185,6 +288,12 @@ public class PluginUtils {
     {
         String raw = config.taskList();
         rawTaskList = raw.split("\n");
+    }
+
+    public void updateUnlockList()
+    {
+        String raw = config.unlockList();
+        rawUnlockList = raw.split("\n");
     }
 
     public void updateGameObjects()
@@ -371,4 +480,16 @@ public class PluginUtils {
                 Arrays.stream(string.split(",")).map(String::trim).map(Integer::parseInt).collect(Collectors.toList());
     }
 
+    public boolean isNumeric(String strNum)
+    {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+    }
 }
