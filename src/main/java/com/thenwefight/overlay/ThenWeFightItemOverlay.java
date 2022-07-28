@@ -28,6 +28,7 @@ public class ThenWeFightItemOverlay extends WidgetItemOverlay {
         this.config = config;
         showOnEquipment();
         showOnInventory();
+        showOnBank();
         showOnInterfaces(
                 WidgetID.CHAMBERS_OF_XERIC_STORAGE_UNIT_INVENTORY_GROUP_ID,
                 WidgetID.CHAMBERS_OF_XERIC_STORAGE_UNIT_PRIVATE_GROUP_ID,

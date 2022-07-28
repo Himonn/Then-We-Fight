@@ -871,4 +871,32 @@ public interface ThenWeFightConfig extends Config
 	)
 	default String unlockList() { return "Y,200,20,Unlock Chicken\nY,chicken.png,20,Unlock Chicken Again"; }
 
+	// ITEM UNLOCK SETTINGS
+
+	@ConfigSection(
+			name = "Item Unlocks",
+			description = "Item Unlocks",
+			position = 25,
+			closedByDefault = true
+	)
+	String itemUnlocks = "Item Unlocks";
+
+	@ConfigItem(
+			name = "Item Unlock Scroll",
+			description = "How many unlocks into the list to start displaying them",
+			position = 5,
+			keyName = "itemUnlockScroll",
+			section = itemUnlocks
+	)
+	default int itemUnlockScroll() { return 0; }
+
+	@ConfigItem(
+			name = "Item Unlock List",
+			description = "Unlock List to display in the form [Y/N,[FILENAME / Item ID],Price,Title]",
+			position = 10,
+			keyName = "itemUnlockList",
+			section = itemUnlocks
+	)
+	default String itemUnlockList() { return "N,20406,20,Unlock Dragon Scimitar\nN,4151,20,Unlock Abyssal Whip"; }
+
 }

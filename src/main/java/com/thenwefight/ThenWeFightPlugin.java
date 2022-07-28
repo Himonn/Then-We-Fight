@@ -59,6 +59,8 @@ public class ThenWeFightPlugin extends Plugin
 	private ThenWeFightWidgetOverlay widgetOverlay;
 	@Inject
 	private ThenWeFightTaskOverlay taskOverlay;
+	@Inject
+	private ThenWeFightItemUnlockOverlay itemUnlockOverlay;
 
 	@Inject
 	private PluginUtils pluginUtils;
@@ -67,6 +69,7 @@ public class ThenWeFightPlugin extends Plugin
 
 	public static String[] rawTaskList;
 	public static String[] rawUnlockList;
+	public static String[] rawItemUnlockList;
 
 	public static List<Integer> unlockedItems = new ArrayList<>();
 	public static List<String> unlockedNpcs = new ArrayList<>();
@@ -75,7 +78,7 @@ public class ThenWeFightPlugin extends Plugin
 
 	public static final Collection<String> BANK_NPC_NAMES = Arrays.asList("banker", "grand exchange clerk", "banker tutor");
 	public static final Collection<String> BANK_OBJECT_NAMES = Arrays.asList("bank booth", "bank chest", "bank deposit box", "bank deposit chest", "grand exchange booth");
-	public static final Collection<String> UNDERGROUND_OBJECT_NAMES = Arrays.asList("stairs", "staircase", "trapdoor", "ladder", "dark hole", "hole", "rope", "cavern entrance", "dive", "cave", "tunnel entrance");
+	public static final Collection<String> UNDERGROUND_OBJECT_NAMES = Arrays.asList("trapdoor", "dark hole", "hole", "rope", "cavern entrance", "dive", "cave", "tunnel entrance");
 	public static final Collection<String> TELEPORT_OPTIONS = Arrays.asList("teleport", "tele");
 	public static final Collection<String> TELEPORT_TARGETS = Arrays.asList("teleport", "tele");
 	public static final Collection<String> STAIRS_OBJECT_NAMES = Arrays.asList("stairs", "staircase");
@@ -94,12 +97,19 @@ public class ThenWeFightPlugin extends Plugin
 	public static Collection<GroundObject> groundObjects = new ArrayList<>();
 	public static Collection<NPC> npcs = new ArrayList<>();
 
+	public static final File THEN_WE_FIGHT_FOLDER = new File(RuneLite.RUNELITE_DIR.getPath() + File.separator + "thenwefight");
 	public static File U_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/1.png");
 	public static File U_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/2.png");
 	public static File U_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/3.png");
 	public static File U_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/4.png");
 	public static File U_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/5.png");
 	public static File U_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/6.png");
+	public static File IU_1_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/1.png");
+	public static File IU_2_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/2.png");
+	public static File IU_3_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/3.png");
+	public static File IU_4_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/4.png");
+	public static File IU_5_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/5.png");
+	public static File IU_6_CUSTOM_DIR = new File(RuneLite.RUNELITE_DIR, "/thenwefight/6.png");
 
 	public static final Collection<Integer> OBJECT_ACTIONS = Arrays.asList(MenuAction.EXAMINE_OBJECT.getId(),
 			MenuAction.GAME_OBJECT_FIRST_OPTION.getId(), MenuAction.GAME_OBJECT_SECOND_OPTION.getId(),
@@ -180,23 +190,44 @@ public class ThenWeFightPlugin extends Plugin
 	public Image u5Custom;
 	@Getter
 	public Image u6Custom;
+	@Getter
+	public Image iu1Custom;
+	@Getter
+	public Image iu2Custom;
+	@Getter
+	public Image iu3Custom;
+	@Getter
+	public Image iu4Custom;
+	@Getter
+	public Image iu5Custom;
+	@Getter
+	public Image iu6Custom;
 
 	public boolean unlockOverlayVisible = false;
 	public boolean taskOverlayVisible = false;
+	public boolean itemUnlockOverlayVisible = false;
 
 	public int plane = -1;
 
 	@Override
 	protected void startUp() throws Exception
 	{
+		if (!THEN_WE_FIGHT_FOLDER.exists())
+		{
+			THEN_WE_FIGHT_FOLDER.mkdirs();
+		}
+
 		overlayManager.add(itemOverlay);
 		overlayManager.add(sceneOverlay);
 		overlayManager.add(unlockOverlay);
 		overlayManager.add(widgetOverlay);
 		overlayManager.add(taskOverlay);
+		overlayManager.add(itemUnlockOverlay);
 
 		pluginUtils.updateUnlockList();
-		pluginUtils.setCustomImageFilePaths();
+		pluginUtils.updateItemUnlockList();
+		pluginUtils.setCustomUnlockImageFilePaths();
+		pluginUtils.setCustomItemUnlockImageFilePaths();
 		pluginUtils.updateItemList();
 		pluginUtils.updateNpcList();
 		pluginUtils.updateWidgetList();
@@ -219,9 +250,12 @@ public class ThenWeFightPlugin extends Plugin
 		overlayManager.remove(unlockOverlay);
 		overlayManager.remove(widgetOverlay);
 		overlayManager.remove(taskOverlay);
+		overlayManager.remove(itemUnlockOverlay);
 
 		pluginUtils.updateUnlockList();
-		pluginUtils.setCustomImageFilePaths();
+		pluginUtils.updateItemUnlockList();
+		pluginUtils.setCustomUnlockImageFilePaths();
+		pluginUtils.setCustomItemUnlockImageFilePaths();
 		pluginUtils.updateItemList();
 		pluginUtils.updateNpcList();
 		pluginUtils.updateWidgetList();
@@ -277,17 +311,29 @@ public class ThenWeFightPlugin extends Plugin
 		if (event.getKey().equals("unlockList"))
 		{
 			pluginUtils.updateUnlockList();
-			pluginUtils.setCustomImageFilePaths();
+			pluginUtils.setCustomUnlockImageFilePaths();
 		}
 
 		if (event.getKey().equals("unlockScroll"))
 		{
-			pluginUtils.setCustomImageFilePaths();
+			pluginUtils.setCustomUnlockImageFilePaths();
+		}
+
+		if (event.getKey().equals("itemUnlockList"))
+		{
+			pluginUtils.updateItemUnlockList();
+			pluginUtils.setCustomItemUnlockImageFilePaths();
+		}
+
+		if (event.getKey().equals("itemUnlockScroll"))
+		{
+			pluginUtils.setCustomItemUnlockImageFilePaths();
 		}
 
 		if (event.getKey().equals("imageWidth") || event.getKey().equals("imageHeight"))
 		{
-			pluginUtils.setCustomImageFilePaths();
+			pluginUtils.setCustomUnlockImageFilePaths();
+			pluginUtils.setCustomItemUnlockImageFilePaths();
 		}
 	}
 
@@ -332,41 +378,62 @@ public class ThenWeFightPlugin extends Plugin
 					.setParam1(param1)
 					.setDeprioritized(true)
 					.setType(MenuAction.RUNELITE);
+
+			client.createMenuEntry(-3)
+					.setOption(ColorUtil.prependColorTag(itemUnlockOverlayVisible ? "Hide Item Unlocks" : "View Item Unlocks", Color.ORANGE))
+					.setParam1(param1)
+					.setDeprioritized(true)
+					.setType(MenuAction.RUNELITE);
 		}
 
-		if (INVENT_TAB_PARAMS.contains(param1))
+		if (INVENT_TAB_PARAMS.contains(param1) && config.unlockItems())
 		{
-			if (config.unlockItems())
-			{
-				client.createMenuEntry(-1)
-						.setOption(ColorUtil.prependColorTag("Lock All Inventory Items", Color.ORANGE))
-						.setParam1(param1)
-						.setDeprioritized(true)
-						.setType(MenuAction.RUNELITE)
-						.onClick(pluginUtils::lockAllItems);
+			client.createMenuEntry(-1)
+					.setOption(ColorUtil.prependColorTag("Lock All Inventory Items", Color.ORANGE))
+					.setParam1(param1)
+					.setDeprioritized(true)
+					.setType(MenuAction.RUNELITE)
+					.onClick(pluginUtils::lockAllItems);
 
 
-				client.createMenuEntry(-2)
-						.setOption(ColorUtil.prependColorTag("Unlock All Inventory Items", Color.ORANGE))
-						.setParam1(param1)
-						.setDeprioritized(true)
-						.setType(MenuAction.RUNELITE)
-						.onClick(pluginUtils::unlockAllItems);
+			client.createMenuEntry(-2)
+					.setOption(ColorUtil.prependColorTag("Unlock All Inventory Items", Color.ORANGE))
+					.setParam1(param1)
+					.setDeprioritized(true)
+					.setType(MenuAction.RUNELITE)
+					.onClick(pluginUtils::unlockAllItems);
 
-				client.createMenuEntry(-3)
-						.setOption(ColorUtil.prependColorTag("Lock All Inventory Food", Color.ORANGE))
-						.setParam1(param1)
-						.setDeprioritized(true)
-						.setType(MenuAction.RUNELITE)
-						.onClick(pluginUtils::lockAllFood);
+			client.createMenuEntry(-3)
+					.setOption(ColorUtil.prependColorTag("Lock All Inventory Food", Color.ORANGE))
+					.setParam1(param1)
+					.setDeprioritized(true)
+					.setType(MenuAction.RUNELITE)
+					.onClick(pluginUtils::lockAllFood);
 
-				client.createMenuEntry(-4)
-						.setOption(ColorUtil.prependColorTag("Unlock All Inventory Food", Color.ORANGE))
-						.setParam1(param1)
-						.setDeprioritized(true)
-						.setType(MenuAction.RUNELITE)
-						.onClick(pluginUtils::unlockAllFood);
-			}
+			client.createMenuEntry(-4)
+					.setOption(ColorUtil.prependColorTag("Unlock All Inventory Food", Color.ORANGE))
+					.setParam1(param1)
+					.setDeprioritized(true)
+					.setType(MenuAction.RUNELITE)
+					.onClick(pluginUtils::unlockAllFood);
+		}
+
+		if (EQUIPMENT_TAB_PARAMS.contains(param1) && config.unlockItems())
+		{
+			client.createMenuEntry(-1)
+					.setOption(ColorUtil.prependColorTag("Lock All Worn Items", Color.ORANGE))
+					.setParam1(param1)
+					.setDeprioritized(true)
+					.setType(MenuAction.RUNELITE)
+					.onClick(pluginUtils::lockAllEquipment);
+
+
+			client.createMenuEntry(-2)
+					.setOption(ColorUtil.prependColorTag("Unlock All Worn Items", Color.ORANGE))
+					.setParam1(param1)
+					.setDeprioritized(true)
+					.setType(MenuAction.RUNELITE)
+					.onClick(pluginUtils::unlockAllEquipment);
 		}
 
 		if (shiftPressed)
@@ -490,10 +557,11 @@ public class ThenWeFightPlugin extends Plugin
 			}
 		}
 
-		if (option.equals("Walk here") && (taskOverlayVisible || unlockOverlayVisible))
+		if (option.equals("Walk here") && (taskOverlayVisible || unlockOverlayVisible || itemUnlockOverlayVisible))
 		{
 			unlockOverlayVisible = false;
 			taskOverlayVisible = false;
+			itemUnlockOverlayVisible = false;
 		}
 
 		if (QUEST_TAB_PARAMS.contains(param1))
@@ -503,6 +571,7 @@ public class ThenWeFightPlugin extends Plugin
 				event.consume();
 				unlockOverlayVisible = true;
 				taskOverlayVisible = false;
+				itemUnlockOverlayVisible = false;
 			}
 
 			if (option.equals(ColorUtil.prependColorTag("Hide Unlocks", Color.ORANGE)))
@@ -516,12 +585,27 @@ public class ThenWeFightPlugin extends Plugin
 				event.consume();
 				taskOverlayVisible = true;
 				unlockOverlayVisible = false;
+				itemUnlockOverlayVisible = false;
 			}
 
 			if (option.equals(ColorUtil.prependColorTag("Hide Tasks", Color.ORANGE)))
 			{
 				event.consume();
 				taskOverlayVisible = false;
+			}
+
+			if (option.equals(ColorUtil.prependColorTag("View Item Unlocks", Color.ORANGE)))
+			{
+				event.consume();
+				itemUnlockOverlayVisible = true;
+				unlockOverlayVisible = false;
+				taskOverlayVisible = false;
+			}
+
+			if (option.equals(ColorUtil.prependColorTag("Hide Item Unlocks", Color.ORANGE)))
+			{
+				event.consume();
+				itemUnlockOverlayVisible = false;
 			}
 		}
 
