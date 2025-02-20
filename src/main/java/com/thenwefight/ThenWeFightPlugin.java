@@ -457,8 +457,7 @@ public class ThenWeFightPlugin extends Plugin
 					&& config.unlockNpcs())
 			{
 				final int id = event.getMenuEntry().getIdentifier();
-				final NPC[] cachedNPCs = client.getCachedNPCs();
-				final NPC npc = cachedNPCs[id];
+				final NPC npc = client.getTopLevelWorldView().npcs().byIndex(id);
 
 				if (npc != null && npc.getName() != null)
 				{
@@ -493,8 +492,7 @@ public class ThenWeFightPlugin extends Plugin
 
 		if (config.unlockNpcs() && NPC_ACTIONS.contains(type))
 		{
-			final NPC[] cachedNPCs = client.getCachedNPCs();
-			final NPC npc = cachedNPCs[identifier];
+			final NPC npc = client.getTopLevelWorldView().npcs().byIndex(identifier);
 
 			if (npc != null && npc.getName() != null && !unlockedNpcs.contains(npc.getName().toLowerCase()))
 			{
@@ -635,8 +633,7 @@ public class ThenWeFightPlugin extends Plugin
 			{
 				event.consume();
 
-				final NPC[] cachedNPCs = client.getCachedNPCs();
-				final NPC npc = cachedNPCs[identifier];
+				final NPC npc = client.getTopLevelWorldView().npcs().byIndex(identifier);
 
 				if (npc != null && npc.getName() != null)
 				{
@@ -649,8 +646,7 @@ public class ThenWeFightPlugin extends Plugin
 			{
 				event.consume();
 
-				final NPC[] cachedNPCs = client.getCachedNPCs();
-				final NPC npc = cachedNPCs[identifier];
+				final NPC npc = client.getTopLevelWorldView().npcs().byIndex(identifier);
 
 				if (npc != null && npc.getName() != null)
 				{
@@ -699,8 +695,7 @@ public class ThenWeFightPlugin extends Plugin
 
 			if (config.unlockNpcs() && NPC_ACTIONS.contains(type))
 			{
-				final NPC[] cachedNPCs = client.getCachedNPCs();
-				final NPC npc = cachedNPCs[identifier];
+				final NPC npc = client.getTopLevelWorldView().npcs().byIndex(identifier);
 
 				if (npc != null && npc.getName() != null && !unlockedNpcs.contains(npc.getName().toLowerCase()))
 				{
